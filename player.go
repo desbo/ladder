@@ -1,6 +1,7 @@
 package ladder
 
 import (
+	"errors"
 	"fmt"
 
 	"golang.org/x/crypto/bcrypt"
@@ -22,6 +23,10 @@ type Player struct {
 
 // NewPlayer creates a player with the name and encrypted password
 func NewPlayer(name string, rawPassword string) (*Player, error) {
+	if rawPassword == "" {
+		return nil, errors.New("no password provided")
+	}
+
 	password, err := bcrypt.GenerateFromPassword([]byte(rawPassword), bcrypt.DefaultCost)
 
 	if err != nil {
@@ -34,9 +39,38 @@ func NewPlayer(name string, rawPassword string) (*Player, error) {
 	}, nil
 }
 
+func key(ctx context.Context, id string) *datastore.Key {
+	return datastore.NewKey(ctx, "Player", id, 0, nil)
+}
+
+func (p *Player) Key(ctx context.Context) *datastore.Key {
+	return key(ctx, p.Name)
+}
+
+func (p *Player) CheckPassword(ctx context.Context, password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(p.Password), []byte(password))
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+func GetPlayer(ctx context.Context, name string) (*Player, error) {
+	p := new(Player)
+	err := datastore.Get(ctx, key(ctx, name), p)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return p, nil
+}
+
 // Save a player to the DB
 func (p *Player) Save(ctx context.Context) (*datastore.Key, error) {
-	key := datastore.NewKey(ctx, "Player", p.Name, 0, nil)
+	key := p.Key(ctx)
 
 	err := datastore.RunInTransaction(ctx, func(ctx context.Context) error {
 		err := datastore.Get(ctx, key, p)
