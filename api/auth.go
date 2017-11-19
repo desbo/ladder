@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	firebase "firebase.google.com/go"
-	"github.com/desbo/ladder"
 	"github.com/julienschmidt/httprouter"
 	"google.golang.org/appengine"
 )
@@ -21,7 +20,7 @@ func login(firebase *firebase.App) func(w http.ResponseWriter, r *http.Request, 
 		}
 
 		ctx := appengine.NewContext(r)
-		p, err := ladder.GetPlayer(ctx, d.Name)
+		p, err := GetPlayer(ctx, d.Name)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusNotFound)

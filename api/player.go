@@ -1,4 +1,4 @@
-package ladder
+package app
 
 import (
 	"errors"

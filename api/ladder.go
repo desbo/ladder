@@ -1,4 +1,4 @@
-package ladder
+package app
 
 import (
 	"time"
@@ -14,11 +14,10 @@ type Ladder struct {
 	Created time.Time      `json:"created"`
 	Owner   *datastore.Key `json:"owner"`
 	Players []struct {
-		Position int
-		Name     string
-		Wins     int
-		Losses   int
-		Key      *datastore.Key
+		Position int    `json:"position"`
+		Name     string `json:"name"`
+		Wins     int    `json:"wins"`
+		Losses   int    `json:"losses"`
 	} `datastore:",noindex" json:"players"`
 }
 

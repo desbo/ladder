@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/desbo/ladder"
 	"github.com/julienschmidt/httprouter"
 	"google.golang.org/appengine"
 )
@@ -16,7 +15,7 @@ type playerPostData struct {
 }
 
 func getLadder(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	lad, err := ladder.GetLadder(appengine.NewContext(r), ps.ByName("id"))
+	lad, err := GetLadder(appengine.NewContext(r), ps.ByName("id"))
 
 	if err != nil {
 		fmt.Fprintf(w, "%s", err)
@@ -26,7 +25,7 @@ func getLadder(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 }
 
 func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	ladder := ladder.NewLadder()
+	ladder := NewLadder()
 	err := decode(ladder, r)
 
 	if err != nil {
@@ -39,7 +38,7 @@ func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 func createPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	d := new(playerPostData)
 	err := decode(d, r)
-	player, err := ladder.NewPlayer(d.Name, d.RawPassword)
+	player, err := NewPlayer(d.Name, d.RawPassword)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
