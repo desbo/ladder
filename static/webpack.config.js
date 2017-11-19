@@ -8,10 +8,15 @@ module.exports = {
     filename: 'app.js'
   },
 
+  resolve: {
+    modules: [path.resolve(__dirname, 'src'), 'node_modules'],
+    extensions: ['.js', '.jsx']
+  },
+
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,
+        test: /\.js$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
@@ -19,7 +24,18 @@ module.exports = {
             presets: ['@babel/preset-env']
           }
         }
-      }
+      },
+
+      {
+        test: /\.jsx$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-react']
+          }
+        }
+      },
     ]
   },
 };
