@@ -940,11 +940,12 @@ module.exports = focusNode;
 "use strict";
 
 
-var _Main = _interopRequireDefault(__webpack_require__(15));
+var Main = _interopRequireWildcard(__webpack_require__(15));
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
-_Main.default.init();
+console.log(Main);
+Main.init();
 
 /***/ }),
 /* 15 */
