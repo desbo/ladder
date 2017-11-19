@@ -20,7 +20,7 @@
     {
       "label": "webpack-dev-server",
       "type": "shell",
-      "command": "cd static && ./node_modules/.bin/webpack-dev-server",
+      "command": "cd static && yarn run dev",
       "presentation": {
         "reveal": "always",
         "panel": "new"

@@ -1,3 +1,9 @@
-import * as Main from 'components/Main';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
-Main.init();
+import Main from 'components/Main';
+
+ReactDOM.render(
+  <Main />,
+  document.getElementById('app')
+);

@@ -1,3 +1,5 @@
+/* eslint-env node */
+
 const path = require('path');
 
 module.exports = {
@@ -8,6 +10,12 @@ module.exports = {
     filename: 'app.js'
   },
 
+  devtool: 'inline-source-map',
+
+  devServer: {
+    port: 8081
+  },
+
   resolve: {
     modules: [path.resolve(__dirname, 'src'), 'node_modules'],
     extensions: ['.js', '.jsx']
@@ -16,26 +24,15 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.jsx?$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env']
+            presets: ['@babel/preset-env', '@babel/preset-react']
           }
         }
-      },
-
-      {
-        test: /\.jsx$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-react']
-          }
-        }
-      },
+      }
     ]
   },
 };
