@@ -5,7 +5,7 @@ export default function Navbar() {
     <nav className="navbar" role="navigation" aria-label="main navigation">
       <div className="container">      
         <div className="navbar-brand">
-          <div className="navbar-item title is-4">🏓 table tennis ladders</div>
+          <div className="navbar-item title is-4">table tennis ladder 🏓</div>
         </div>
       </div>
     </nav>
