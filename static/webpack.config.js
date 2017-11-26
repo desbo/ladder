@@ -3,7 +3,7 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/app.js',
+  entry: './src/app.tsx',
 
   output: {
     path: path.resolve(__dirname, 'public'),
@@ -13,26 +13,27 @@ module.exports = {
   devtool: 'inline-source-map',
 
   devServer: {
+    publicPath: '/public/',
     port: 8081
   },
 
   resolve: {
     modules: [path.resolve(__dirname, 'src'), 'node_modules'],
-    extensions: ['.js', '.jsx']
+    extensions: ['.ts', '.tsx', '.js', '.jsx']
   },
 
   module: {
     rules: [
-      {
-        test: /\.jsx?$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env', '@babel/preset-react']
-          }
-        }
+      { 
+        test: /\.tsx?$/, 
+        loader: 'awesome-typescript-loader' 
+      },
+
+      { 
+        enforce: 'pre', 
+        test: /\.js$/, 
+        loader: 'source-map-loader' 
       }
     ]
-  },
+  }
 };
