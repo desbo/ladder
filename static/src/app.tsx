@@ -20,12 +20,12 @@ const store: Store<AppState> = createStore(combineReducers({
 const firebaseApp = auth.initFirebase();
 
 firebaseApp.app.auth().onAuthStateChanged((user: null | User) => {
-  if (user) store.dispatch(signIn(user.displayName))
-});
+  if (user) store.dispatch(signIn(user.displayName));
 
-ReactDOM.render(
-  <Provider store={store}>
-    <Main />
-  </Provider>,
-  document.getElementById('app')
-)
+  ReactDOM.render(
+    <Provider store={store}>
+      <Main />
+    </Provider>,
+    document.getElementById('app')
+  )
+});

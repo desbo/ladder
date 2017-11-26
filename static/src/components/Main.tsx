@@ -8,6 +8,7 @@ import Login from 'components/Login';
 
 import * as actions from 'actions/actions';
 import { firebase } from 'auth';
+import { User } from 'firebase';
 
 const mapStateToProps = (state: AppState) => ({
   user: state.user,
@@ -18,11 +19,15 @@ const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
   setLoginMode: (mode: LoginMode) => dispatch(actions.setLoginMode(mode)),
 
   signIn: (email: string, password: string): Promise<any> => {
-    return firebase.signIn(email, password).then(x => console.log(x));
+    return firebase.signIn(email, password);
   },
 
   register: (username: string, email: string, password: string): Promise<any> => {
-    return firebase.register(username, email, password).then(x => console.log(x));
+    return firebase.register(username, email, password)
+      .then((user: User) => dispatch({
+        type: actions.SIGN_IN,
+        username: user.displayName
+      }));
   },
 
   userFormInput: (field: string, value: string): void => {
@@ -47,7 +52,7 @@ type MainProps = {
 const Main = ({ user, view, setLoginMode, register, signIn, userFormInput }: MainProps) => {
   return (
     <div>
-      <Navbar />
+      <Navbar username={user.username} />
 
       <section className="section">
         <div className="container">
@@ -62,7 +67,7 @@ const Main = ({ user, view, setLoginMode, register, signIn, userFormInput }: Mai
             selectRegister={() => setLoginMode('register')}
             register={register}
             signIn={signIn} 
-            inputName={(username: string) => userFormInput('username', name)} 
+            inputName={(username: string) => userFormInput('username', username)} 
             inputEmail={(email: string) => userFormInput('email', email)} 
             inputPassword={(password: string) => userFormInput('password', password)} />  
         }

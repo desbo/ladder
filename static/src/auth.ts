@@ -1,5 +1,6 @@
 import * as firebase from 'firebase';
 import { Store } from 'redux';
+import { User } from 'firebase';
 
 const config = {
   apiKey: 'AIzaSyBeUnA3-wodE50jIpaEqOVA_h_SXmxCOOQ',
@@ -19,12 +20,22 @@ export class FirebaseApp {
     this.app = firebase.initializeApp(config);
   }
 
-  register(username: string, email: string, password: string): Promise<any> {
-    return this.app.auth().createUserWithEmailAndPassword(email, password);
+  register(username: string, email: string, password: string): Promise<User> {
+    return this.app.auth().createUserWithEmailAndPassword(email, password)
+      .then(() => this.updateProfile(username, ''))
+      .then(() => this.app.auth().currentUser);
   }
 
-  signIn(email: string, password: string): Promise<any> {
-    return this.app.auth().signInWithEmailAndPassword(email, password);
+  signIn(email: string, password: string): Promise<User> {
+    return this.app.auth().signInWithEmailAndPassword(email, password)
+      .then(() => this.app.auth().currentUser);;
+  }
+
+  updateProfile(displayName: string, photoURL: string): Promise<any> {
+    return this.app.auth().currentUser.updateProfile({
+      displayName,
+      photoURL
+    })
   }
 
   signOut(): Promise<any> {
