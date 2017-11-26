@@ -22,9 +22,15 @@ const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
   },
 
   register: (username: string, email: string, password: string): Promise<any> => {
-    console.log('registering');
-    console.log(username, email, password);
     return firebase.register(username, email, password).then(x => console.log(x));
+  },
+
+  userFormInput: (field: string, value: string): void => {
+    dispatch({
+      type: actions.USER_FORM_INPUT,
+      field,
+      value
+    });
   }
 });
 
@@ -34,10 +40,11 @@ type MainProps = {
   view: ViewState,
   setLoginMode: (mode: LoginMode) => any,
   register: (username: string, email: string, password: string) => Promise<any>,
-  signIn: (email: string, password: string) => Promise<any>
+  signIn: (email: string, password: string) => Promise<any>,
+  userFormInput: (field: string, value: string) => void
 };
 
-const Main = ({ user, view, setLoginMode, register, signIn }: MainProps) => {
+const Main = ({ user, view, setLoginMode, register, signIn, userFormInput }: MainProps) => {
   return (
     <div>
       <Navbar />
@@ -54,7 +61,10 @@ const Main = ({ user, view, setLoginMode, register, signIn }: MainProps) => {
             selectLogin={() => setLoginMode('login')}
             selectRegister={() => setLoginMode('register')}
             register={register}
-            signIn={signIn} />  
+            signIn={signIn} 
+            inputName={(username: string) => userFormInput('username', name)} 
+            inputEmail={(email: string) => userFormInput('email', email)} 
+            inputPassword={(password: string) => userFormInput('password', password)} />  
         }
         </div>
       </section>

@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import InputField from 'components/form/InputField';
-import { ReactInstance, Ref } from 'react';
+import { ReactInstance, Ref, ChangeEvent } from 'react';
 
 export default class Login extends React.Component {
   nameInput: null | HTMLInputElement
@@ -14,7 +14,10 @@ export default class Login extends React.Component {
     selectLogin: () => void,
     selectRegister: () => void,
     register: (username: string, email: string, password: string) => Promise<any>,
-    signIn: (email: string, password: string) => Promise<any>
+    signIn: (email: string, password: string) => Promise<any>,
+    inputName: (username: string) => void,
+    inputEmail: (email: string) => void,
+    inputPassword: (password: string) => void
   }
 
   validate(f: Function) {
@@ -28,7 +31,7 @@ export default class Login extends React.Component {
 
   render() {
     const userInput = this.props.input;
-    
+
     return (
       <div className="columns is-centered">
         <div className="column is-centered is-one-third">
@@ -48,13 +51,19 @@ export default class Login extends React.Component {
           <form onSubmit={e => e.preventDefault()}>
             {this.props.mode === 'register' && 
               <InputField label="player name" type="text" required 
+                value={userInput.username || ''}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.props.inputName(e.target.value)}
                 inputRef={(e: HTMLInputElement) => this.nameInput = e} />
             }
 
             <InputField label="email" type="email" required 
+              value={userInput.email || ''}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.props.inputEmail(e.target.value)}
               inputRef={(e: HTMLInputElement) => this.emailInput = e} />
 
-            <InputField label="password" type="password" required 
+            <InputField label="password" type="password" required
+              value={userInput.password || ''}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.props.inputPassword(e.target.value)}
               inputRef={(e: HTMLInputElement) => this.passwordInput = e} />
 
             <div className="buttons is-centered">
