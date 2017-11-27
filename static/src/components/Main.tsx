@@ -3,8 +3,10 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 
-import Navbar from 'components/Navbar';
+import Navbar from 'components/nav/Navbar';
 import Login from 'components/Login';
+import YourLadders from 'components/YourLadders';
+import NewLadder from 'components/NewLadder';
 
 import * as actions from 'actions/actions';
 import { firebase } from 'auth';
@@ -16,27 +18,28 @@ const mapStateToProps = (state: AppState) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
-  setLoginMode: (mode: LoginMode) => dispatch(actions.setLoginMode(mode)),
+  setLoginMode: (mode: LoginMode) => 
+    dispatch(actions.setLoginMode(mode)),
 
-  signIn: (email: string, password: string): Promise<any> => {
-    return firebase.signIn(email, password);
-  },
+  signIn: (email: string, password: string): Promise<any> => 
+    firebase.signIn(email, password),
 
-  register: (username: string, email: string, password: string): Promise<any> => {
-    return firebase.register(username, email, password)
+  signOut: () => firebase.signOut().then(() => dispatch({
+    type: actions.SIGN_OUT
+  })),
+
+  register: (username: string, email: string, password: string): Promise<any> =>
+    firebase.register(username, email, password)
       .then((user: User) => dispatch({
         type: actions.SIGN_IN,
         username: user.displayName
-      }));
-  },
+      })),
 
-  userFormInput: (field: string, value: string): void => {
-    dispatch({
-      type: actions.USER_FORM_INPUT,
-      field,
-      value
-    });
-  }
+  userFormInput: (field: string, value: string) => dispatch({
+    type: actions.USER_FORM_INPUT,
+    field,
+    value
+  })
 });
 
 // type of the props passed into Main (as built by `connect`)
@@ -46,19 +49,24 @@ type MainProps = {
   setLoginMode: (mode: LoginMode) => any,
   register: (username: string, email: string, password: string) => Promise<any>,
   signIn: (email: string, password: string) => Promise<any>,
+  signOut: () => Promise<any>,
   userFormInput: (field: string, value: string) => void
 };
 
-const Main = ({ user, view, setLoginMode, register, signIn, userFormInput }: MainProps) => {
+const Main = ({ user, view, setLoginMode, register, signIn, signOut, userFormInput }: MainProps) => {
   return (
     <div>
-      <Navbar username={user.username} />
+      <Navbar username={user.username} signOut={signOut} />
 
       <section className="section">
         <div className="container">
 
         {user.signedIn ? 
-          <h1>Hello user!</h1> :
+          <div className="columns">
+            <YourLadders className="column" />
+            <NewLadder
+           className="column" /> 
+          </div> :
 
           <Login 
             input={user.formInput}

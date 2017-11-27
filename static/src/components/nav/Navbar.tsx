@@ -1,8 +1,14 @@
 import * as React from 'react';
 
+import UserMenu from 'components/nav/UserMenu';
+
 export default function Navbar({
-  username
-}: { username: null | string }) {
+  username,
+  signOut
+}: { 
+  username: null | string,
+  signOut: Function
+}) {
   return (
     <nav className="navbar" role="navigation" aria-label="main navigation">
       <div className="container">      
@@ -10,9 +16,7 @@ export default function Navbar({
           <div className="navbar-item title is-4">table tennis ladder 🏓</div>
         </div>
 
-        {username &&
-          <div className="navbar-right">{username}</div> 
-        }
+        {username && <UserMenu username={username} signOut={signOut} /> }
       </div>
     </nav>
   );
