@@ -1,6 +1,7 @@
 import * as firebase from 'firebase';
 import { Store } from 'redux';
 import { User } from 'firebase';
+import { local } from 'api';
 
 const config = {
   apiKey: 'AIzaSyBeUnA3-wodE50jIpaEqOVA_h_SXmxCOOQ',
@@ -23,6 +24,7 @@ export class FirebaseApp {
   register(username: string, email: string, password: string): Promise<User> {
     return this.app.auth().createUserWithEmailAndPassword(email, password)
       .then(() => this.updateProfile(username, ''))
+      .then(() => local.registerPlayer())
       .then(() => this.app.auth().currentUser);
   }
 

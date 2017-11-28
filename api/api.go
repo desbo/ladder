@@ -28,6 +28,7 @@ func getLadder(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	ladder := NewLadder()
 	err := decode(ladder, r)
+	ctx := appengine.NewContext(r)
 
 	if ladder.Name == "" {
 		http.Error(w, "no ladder name provided", http.StatusBadRequest)
@@ -39,22 +40,43 @@ func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
+	token, err := initAndVerifyToken(ctx, r)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// todo: fix this
+	go func() {
+		p := NewPlayerFromToken(token)
+		p.Save(appengine.NewContext(r))
+	}()
+
+	ladder.Owner = PlayerKeyFromToken(ctx, token)
+
 	save(ladder, w, r)
 }
 
 func createPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	ctx := appengine.NewContext(r)
+	token, err := initAndVerifyToken(ctx, r)
 
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	save(NewPlayerFromToken(token), w, r)
 }
 
 func init() {
 	router := httprouter.New()
-	//app, _ := initFirebase()
 
 	router.GET("/ladder/:id", getLadder)
 	router.POST("/ladder", createLadder)
 
 	router.POST("/player", createPlayer)
 
-	http.Handle("/", cors.Default().Handler(router))
-
+	http.Handle("/", cors.AllowAll().Handler(router))
 }
