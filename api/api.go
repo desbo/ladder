@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/cors"
 	"google.golang.org/appengine"
 )
 
@@ -28,35 +29,32 @@ func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	ladder := NewLadder()
 	err := decode(ladder, r)
 
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if ladder.Name == "" {
+		http.Error(w, "no ladder name provided", http.StatusBadRequest)
+		return
 	}
-
-	save(ladder, w, r)
-}
-
-func createPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	d := new(playerPostData)
-	err := decode(d, r)
-	player, err := NewPlayer(d.Name, d.RawPassword)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	save(player, w, r)
+	save(ladder, w, r)
+}
+
+func createPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+
 }
 
 func init() {
 	router := httprouter.New()
-	app, _ := initFirebase()
+	//app, _ := initFirebase()
 
 	router.GET("/ladder/:id", getLadder)
 	router.POST("/ladder", createLadder)
 
 	router.POST("/player", createPlayer)
-	router.POST("/login", login(app))
 
-	http.Handle("/", router)
+	http.Handle("/", cors.Default().Handler(router))
+
 }

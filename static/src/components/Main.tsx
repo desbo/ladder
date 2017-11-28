@@ -5,8 +5,7 @@ import { Dispatch } from 'redux';
 
 import Navbar from 'components/nav/Navbar';
 import Login from 'components/Login';
-import YourLadders from 'components/YourLadders';
-import NewLadder from 'components/NewLadder';
+import Ladders from 'components/Ladders';
 
 import * as actions from 'actions/actions';
 import { firebase } from 'auth';
@@ -62,11 +61,7 @@ const Main = ({ user, view, setLoginMode, register, signIn, signOut, userFormInp
         <div className="container">
 
         {user.signedIn ? 
-          <div className="columns">
-            <YourLadders className="column" />
-            <NewLadder
-           className="column" /> 
-          </div> :
+          <Ladders /> :
 
           <Login 
             input={user.formInput}

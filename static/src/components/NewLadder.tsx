@@ -2,7 +2,7 @@ import * as React from 'react';
 
 import InputField from 'components/form/InputField';
 
-export default class NewLadderForm extends React.Component<{className: string}, {ladderName: string}> {
+export default class NewLadderForm extends React.Component<{className: string, createLadder: Function}, {ladderName: string}> {
   render() {
     return <div className={this.props.className}>
       <h1 className="title is-4">create new ladder</h1>
@@ -16,7 +16,7 @@ export default class NewLadderForm extends React.Component<{className: string}, 
           <button 
             type="submit"
             className="button is-primary" 
-            onClick={s => console.log(this.state.ladderName)}>
+            onClick={() => this.props.createLadder(this.state.ladderName)}>
               create
           </button>
         </div>
