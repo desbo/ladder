@@ -25,6 +25,26 @@ func getLadder(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 }
 
+func getLaddersForPlayer(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	ctx := appengine.NewContext(r)
+	token, err := initAndVerifyToken(ctx, r)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	ladders, err := GetLaddersForPlayer(ctx, token)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(ladders)
+}
+
 func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	ladder := NewLadder()
 	err := decode(ladder, r)
@@ -47,13 +67,7 @@ func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	// todo: fix this
-	go func() {
-		p := NewPlayerFromToken(token)
-		p.Save(appengine.NewContext(r))
-	}()
-
-	ladder.Owner = PlayerKeyFromToken(ctx, token)
+	ladder.OwnerKey = PlayerKeyFromToken(ctx, token)
 
 	save(ladder, w, r)
 }
@@ -75,6 +89,8 @@ func init() {
 
 	router.GET("/ladder/:id", getLadder)
 	router.POST("/ladder", createLadder)
+
+	router.GET("/ladders", getLaddersForPlayer)
 
 	router.POST("/player", createPlayer)
 

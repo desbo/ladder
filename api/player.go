@@ -27,12 +27,12 @@ func NewPlayerFromToken(token *auth.Token) *Player {
 }
 
 func PlayerKeyFromToken(ctx context.Context, token *auth.Token) *datastore.Key {
-	return datastore.NewKey(ctx, "Player", token.UID, 0, nil)
+	return datastore.NewKey(ctx, PlayerKind, token.UID, 0, nil)
 }
 
 // Save a player to the DB
 func (p *Player) Save(ctx context.Context) (*datastore.Key, error) {
-	key := datastore.NewKey(ctx, "Player", p.FirebaseID, 0, nil)
+	key := datastore.NewKey(ctx, PlayerKind, p.FirebaseID, 0, nil)
 
 	err := datastore.RunInTransaction(ctx, func(ctx context.Context) error {
 		err := datastore.Get(ctx, key, p)

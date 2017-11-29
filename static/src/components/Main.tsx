@@ -7,7 +7,7 @@ import Navbar from 'components/nav/Navbar';
 import Login from 'components/Login';
 import Ladders from 'components/Ladders';
 
-import * as actions from 'actions/actions';
+import { Actions , setLoginMode } from 'actions/actions';
 import { firebase } from 'auth';
 import { User } from 'firebase';
 
@@ -18,24 +18,24 @@ const mapStateToProps = (state: AppState) => ({
 
 const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
   setLoginMode: (mode: LoginMode) => 
-    dispatch(actions.setLoginMode(mode)),
+    dispatch(setLoginMode(mode)),
 
   signIn: (email: string, password: string): Promise<any> => 
     firebase.signIn(email, password),
 
   signOut: () => firebase.signOut().then(() => dispatch({
-    type: actions.SIGN_OUT
+    type: Actions.SIGN_OUT
   })),
 
   register: (username: string, email: string, password: string): Promise<any> =>
     firebase.register(username, email, password)
       .then((user: User) => dispatch({
-        type: actions.SIGN_IN,
+        type: Actions.SIGN_IN,
         username: user.displayName
       })),
 
   userFormInput: (field: string, value: string) => dispatch({
-    type: actions.USER_FORM_INPUT,
+    type: Actions.USER_FORM_INPUT,
     field,
     value
   })

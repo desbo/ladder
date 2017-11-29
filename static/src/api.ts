@@ -7,22 +7,24 @@ class API {
     this.url = url;
   }
 
-  private static fetchWithToken(url: string, init?: RequestInit) {
-    return firebase.getToken().then(token => 
-      fetch(url, Object.assign({}, init, {
-        headers: {
-          "Firebase-Token": token
-        }
-      })));
+  // attach the firebase token header to the request, return the response as JSON
+  private static fetchWithToken(url: string, init?: RequestInit): Promise<any> {
+    return firebase.getToken()
+      .then(token => fetch(url, Object.assign({}, init, { headers: { "Firebase-Token": token }})))
+      .then(res => res.json());
   }
 
   createLadder(name: string): Promise<any> {
     return API.fetchWithToken(`${this.url}/ladder`, {
       method: 'POST',
       body: JSON.stringify({ 
-        name
+        name 
       })
-    }).then(res => res.json())
+    });
+  }
+
+  getLadders(): Promise<any> {
+    return API.fetchWithToken(`${this.url}/ladders`);
   }
 
   registerPlayer(): Promise<any> {
@@ -32,8 +34,4 @@ class API {
   }
 }
 
-const local = new API('http://localhost:8080');
-
-export {
-  local
-}
+export default new API(API_URL);

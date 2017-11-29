@@ -1,20 +1,27 @@
 import * as React from 'react';
 
+
+import { Actions } from 'actions/actions';
+
 import YourLadders from 'components/YourLadders';
 import NewLadder from 'components/NewLadder';
 
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
-import { local as localAPI } from 'api';
+import API from 'api';
 
 const mapStateToProps = (state: AppState) => ({
   user: state.user
 });
 
 const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
-  createLadder: (name: string) => localAPI.createLadder(name)
-    .then(r => console.log(r))
+  createLadder: (name: string) => API.createLadder(name)
+    .then(() => API.getLadders())
+    .then(ladders => dispatch({
+      type: Actions.SET_PLAYER_LADDERS,
+      ladders
+    }))
 });
 
 const Ladders = ({ 
@@ -25,8 +32,8 @@ const Ladders = ({
   createLadder: Function 
 }) =>
   <div className="columns">
-    <YourLadders className="column" />
-    <NewLadder createLadder={createLadder} className="column" />
+    <YourLadders className="column is-8" />
+    <NewLadder createLadder={createLadder} className="column is-4" />
   </div>
 
 export default connect(

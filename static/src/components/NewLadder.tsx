@@ -3,6 +3,13 @@ import * as React from 'react';
 import InputField from 'components/form/InputField';
 
 export default class NewLadderForm extends React.Component<{className: string, createLadder: Function}, {ladderName: string}> {
+  createLadder() {
+    return this.props.createLadder(this.state.ladderName)
+      .then(() => this.setState({
+        ladderName: ''
+      }))
+  }
+
   render() {
     return <div className={this.props.className}>
       <h1 className="title is-4">create new ladder</h1>
@@ -16,7 +23,7 @@ export default class NewLadderForm extends React.Component<{className: string, c
           <button 
             type="submit"
             className="button is-primary" 
-            onClick={() => this.props.createLadder(this.state.ladderName)}>
+            onClick={() => this.createLadder()}>
               create
           </button>
         </div>
