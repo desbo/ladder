@@ -4,6 +4,20 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "dev_appserver (clear datastore)",
+      "type": "shell",
+      "command": "dev_appserver.py --clear_datastore yes --default_gcs_bucket_name tt-ladder.appspot.com api",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+
+    {
       "label": "dev_appserver",
       "type": "shell",
       "command": "dev_appserver.py --default_gcs_bucket_name tt-ladder.appspot.com api",
@@ -13,7 +27,7 @@
       },
       "group": {
         "kind": "build",
-        "isDefault": true
+        "isDefault": false
       }
     },
 
@@ -27,7 +41,7 @@
       },
       "group": {
         "kind": "build",
-        "isDefault": true
+        "isDefault": false
       }
     }
   ]

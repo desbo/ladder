@@ -3,7 +3,8 @@ declare const API_URL: string;
 
 type Ladder = {
   name: string,
-  created: Date,
+  key: string,
+  created: string,
   players: Array<{
     position: number,
     name: string,
@@ -18,7 +19,8 @@ type Ladder = {
  */
 type AppState = {
   user: UserState,
-  view: ViewState
+  view: ViewState,
+  ladders: LadderState
 }
 
 // Login/Registration input

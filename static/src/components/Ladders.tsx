@@ -12,7 +12,7 @@ import { connect } from 'react-redux';
 import API from 'api';
 
 const mapStateToProps = (state: AppState) => ({
-  user: state.user
+  ladders: state.ladders
 });
 
 const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
@@ -25,14 +25,14 @@ const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
 });
 
 const Ladders = ({ 
-  user, 
+  ladders, 
   createLadder 
 }: { 
-  user: UserState, 
+  ladders: LadderState, 
   createLadder: Function 
 }) =>
   <div className="columns">
-    <YourLadders className="column is-8" />
+    <YourLadders owned={ladders.owned} playing={ladders.playing} className="column is-8" />
     <NewLadder createLadder={createLadder} className="column is-4" />
   </div>
 

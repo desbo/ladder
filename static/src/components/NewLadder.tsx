@@ -2,20 +2,27 @@ import * as React from 'react';
 
 import InputField from 'components/form/InputField';
 
-export default class NewLadderForm extends React.Component<{className: string, createLadder: Function}, {ladderName: string}> {
+type Props = {className: string, createLadder: Function};
+
+export default class NewLadderForm extends React.Component<Props, {ladderName: string}> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      ladderName: ''
+    }
+  }
+
   createLadder() {
     return this.props.createLadder(this.state.ladderName)
-      .then(() => this.setState({
-        ladderName: ''
-      }))
+      .then(() => this.setState({ ladderName: '' }))
   }
 
   render() {
     return <div className={this.props.className}>
-      <h1 className="title is-4">create new ladder</h1>
+      <h2 className="title is-4">create new ladder</h2>
 
       <form onSubmit={e => e.preventDefault()}>
-        <InputField label="name" type="text" onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({
+        <InputField value={this.state.ladderName || ''} label="name" type="text" onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setState({
           ladderName: e.target.value
         })} required />
 

@@ -12,15 +12,16 @@ import (
 )
 
 type LadderPlayer struct {
+	Key      *datastore.Key `json:"key" datastore:"__key__"`
 	Position int            `json:"position"`
 	Name     string         `json:"name"`
-	Key      *datastore.Key `json:"key"`
 	Wins     int            `json:"wins"`
 	Losses   int            `json:"losses"`
 }
 
 // Ladder represents a single ladder
 type Ladder struct {
+	Key      *datastore.Key `json:"key"`
 	Name     string         `json:"name"`
 	Created  time.Time      `json:"created"`
 	OwnerKey *datastore.Key `json:"ownerKey"`
@@ -57,6 +58,8 @@ func GetLadder(ctx context.Context, id string) (*Ladder, error) {
 		return nil, err
 	}
 
+	l.Key = key
+
 	return l, nil
 }
 
@@ -66,18 +69,26 @@ func GetLaddersForPlayer(ctx context.Context, token *auth.Token) (*PlayerLadders
 
 	key := PlayerKeyFromToken(ctx, token)
 
-	if _, err := datastore.NewQuery(LadderKind).Filter("OwnerKey = ", key).GetAll(ctx, &owned); err != nil {
+	ownedKeys, err := datastore.NewQuery(LadderKind).Filter("OwnerKey = ", key).GetAll(ctx, &owned)
+
+	if err != nil {
 		log.Errorf(ctx, "error querying owned ladders for %v: %v", key, err)
 		return nil, err
 	}
 
-	if _, err := datastore.NewQuery(LadderKind).Filter("Players.Key = ", key).GetAll(ctx, &playing); err != nil {
+	playerKeys, err := datastore.NewQuery(LadderKind).Filter("Players.Key = ", key).GetAll(ctx, &playing)
+
+	if err != nil {
 		log.Errorf(ctx, "error querying playing ladders for %v: %v", key, err)
 		return nil, err
 	}
 
+	keys := append(ownedKeys, playerKeys...)
+
 	// Set empty players to empty array, ensures `[]` rather than `null` in JSON response
-	for _, ladder := range append(owned, playing...) {
+	for i, ladder := range append(owned, playing...) {
+		ladder.Key = keys[i]
+
 		if ladder.Players == nil {
 			ladder.Players = make([]LadderPlayer, 0)
 		}
