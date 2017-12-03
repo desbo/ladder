@@ -27,13 +27,12 @@ const LadderList = ({
       </thead>
 
       <tbody>
-        {owned.map(ladder => {
-
-          return <tr key={ladder.key}>
-            <td><Link to={`/ladder/${ladder.key}`}>{ladder.name}</Link></td>
-            <td key={`${ladder.key}-date`}>{format(ladder.created)}</td>
+        {owned.map(ladder => 
+          <tr key={ladder.id}>
+            <td><Link to={`/ladder/${ladder.id}`}>{ladder.name}</Link></td>
+            <td key={`${ladder.id}-date`}>{format(ladder.created)}</td>
           </tr>
-        })}
+        )}
       </tbody>
     </table>
   </div>

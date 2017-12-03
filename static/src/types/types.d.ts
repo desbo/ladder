@@ -3,7 +3,7 @@ declare const API_URL: string;
 
 type Ladder = {
   name: string,
-  key: string,
+  id: string,
   created: string,
   players: Array<{
     position: number,
