@@ -1,4 +1,4 @@
-import { SET_LOGIN_MODE } from 'actions/actions';
+import { Actions } from 'actions/actions';
 import { AnyAction } from 'redux';
 
 const initialState: ViewState = {
@@ -7,7 +7,7 @@ const initialState: ViewState = {
 
 export default function viewReducer(state = initialState, action: AnyAction): ViewState {
   switch (action.type) {
-    case SET_LOGIN_MODE:
+    case Actions.SET_LOGIN_MODE:
       return Object.assign({}, state, {
         loginMode: action.mode
       });

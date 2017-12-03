@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/rs/cors"
 	"google.golang.org/appengine"
 )
 
@@ -24,39 +25,74 @@ func getLadder(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 }
 
-func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	ladder := NewLadder()
-	err := decode(ladder, r)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
-
-	save(ladder, w, r)
-}
-
-func createPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	d := new(playerPostData)
-	err := decode(d, r)
-	player, err := NewPlayer(d.Name, d.RawPassword)
+func getLaddersForPlayer(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	ctx := appengine.NewContext(r)
+	token, err := initAndVerifyToken(ctx, r)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	save(player, w, r)
+	ladders, err := GetLaddersForPlayer(ctx, token)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(ladders)
+}
+
+func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	ladder := NewLadder()
+	err := decode(ladder, r)
+	ctx := appengine.NewContext(r)
+
+	if ladder.Name == "" {
+		http.Error(w, "no ladder name provided", http.StatusBadRequest)
+		return
+	}
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	token, err := initAndVerifyToken(ctx, r)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	ladder.OwnerKey = PlayerKeyFromToken(ctx, token)
+
+	save(ladder, w, r)
+}
+
+func createPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	ctx := appengine.NewContext(r)
+	token, err := initAndVerifyToken(ctx, r)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	save(NewPlayerFromToken(token), w, r)
 }
 
 func init() {
 	router := httprouter.New()
-	app, _ := initFirebase()
 
 	router.GET("/ladder/:id", getLadder)
 	router.POST("/ladder", createLadder)
 
-	router.POST("/player", createPlayer)
-	router.POST("/login", login(app))
+	router.GET("/ladders", getLaddersForPlayer)
 
-	http.Handle("/", router)
+	router.POST("/player", createPlayer)
+
+	http.Handle("/", cors.AllowAll().Handler(router))
 }

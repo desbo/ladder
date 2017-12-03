@@ -1,19 +1,29 @@
-export const SET_LOGIN_MODE = 'SET_LOGIN_MODE';
-export const SIGN_IN = 'SIGN_IN';
-export const SIGN_OUT = 'SIGN_OUT';
+export enum Actions {
+  SET_LOGIN_MODE = 'SET_LOGIN_MODE',
+  SIGN_IN = 'SIGN_IN',
+  SIGN_OUT = 'SIGN_OUT',
+  USER_FORM_INPUT = 'USER_FORM_INPUT',
 
-export const USER_FORM_INPUT = 'USER_FORM_INPUT';
+  SET_PLAYER_LADDERS = 'SET_PLAYER_LADDERS'
+}
 
 export function signIn(username: string) {
   return {
-    type: SIGN_IN,
+    type: Actions.SIGN_IN,
     username: username
   }
 }
 
 export function setLoginMode(mode: LoginMode) {
   return {
-    type: SET_LOGIN_MODE,
+    type: Actions.SET_LOGIN_MODE,
     mode: mode
+  }
+}
+
+export function setPlayerLadders(ladders: LadderState) {
+  return {
+    type: Actions.SET_PLAYER_LADDERS,
+    ladders: ladders
   }
 }

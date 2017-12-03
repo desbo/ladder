@@ -10,9 +10,20 @@ import (
 	"google.golang.org/appengine/datastore"
 )
 
+// Entity kinds
+const (
+	LadderKind = "Ladder"
+	PlayerKind = "Player"
+)
+
 // DatastoreEntity is any entity that can exist in GAE datastore
 type DatastoreEntity interface {
 	Save(ctx context.Context) (*datastore.Key, error)
+}
+
+type saveResult struct {
+	DatastoreEntity `json:"entity"`
+	Key             *datastore.Key `json:"key"`
 }
 
 func decode(e interface{}, r *http.Request) error {
@@ -29,5 +40,10 @@ func save(e DatastoreEntity, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(key)
+	w.Header().Set("Content-Type", "application/json")
+
+	json.NewEncoder(w).Encode(saveResult{
+		DatastoreEntity: e,
+		Key:             key,
+	})
 }

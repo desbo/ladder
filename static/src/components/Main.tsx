@@ -3,10 +3,10 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 
-import Navbar from 'components/Navbar';
 import Login from 'components/Login';
+import Ladders from 'components/Ladders';
 
-import * as actions from 'actions/actions';
+import { Actions , setLoginMode } from 'actions/actions';
 import { firebase } from 'auth';
 import { User } from 'firebase';
 
@@ -16,27 +16,24 @@ const mapStateToProps = (state: AppState) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
-  setLoginMode: (mode: LoginMode) => dispatch(actions.setLoginMode(mode)),
+  setLoginMode: (mode: LoginMode) => 
+    dispatch(setLoginMode(mode)),
 
-  signIn: (email: string, password: string): Promise<any> => {
-    return firebase.signIn(email, password);
-  },
+  signIn: (email: string, password: string): Promise<any> => 
+    firebase.signIn(email, password),
 
-  register: (username: string, email: string, password: string): Promise<any> => {
-    return firebase.register(username, email, password)
+  register: (username: string, email: string, password: string): Promise<any> =>
+    firebase.register(username, email, password)
       .then((user: User) => dispatch({
-        type: actions.SIGN_IN,
+        type: Actions.SIGN_IN,
         username: user.displayName
-      }));
-  },
+      })),
 
-  userFormInput: (field: string, value: string): void => {
-    dispatch({
-      type: actions.USER_FORM_INPUT,
-      field,
-      value
-    });
-  }
+  userFormInput: (field: string, value: string) => dispatch({
+    type: Actions.USER_FORM_INPUT,
+    field,
+    value
+  })
 });
 
 // type of the props passed into Main (as built by `connect`)
@@ -52,27 +49,20 @@ type MainProps = {
 const Main = ({ user, view, setLoginMode, register, signIn, userFormInput }: MainProps) => {
   return (
     <div>
-      <Navbar username={user.username} />
+      {user.signedIn ? 
+        <Ladders /> :
 
-      <section className="section">
-        <div className="container">
-
-        {user.signedIn ? 
-          <h1>Hello user!</h1> :
-
-          <Login 
-            input={user.formInput}
-            mode={view.loginMode}
-            selectLogin={() => setLoginMode('login')}
-            selectRegister={() => setLoginMode('register')}
-            register={register}
-            signIn={signIn} 
-            inputName={(username: string) => userFormInput('username', username)} 
-            inputEmail={(email: string) => userFormInput('email', email)} 
-            inputPassword={(password: string) => userFormInput('password', password)} />  
-        }
-        </div>
-      </section>
+        <Login 
+          input={user.formInput}
+          mode={view.loginMode}
+          selectLogin={() => setLoginMode('login')}
+          selectRegister={() => setLoginMode('register')}
+          register={register}
+          signIn={signIn} 
+          inputName={(username: string) => userFormInput('username', username)} 
+          inputEmail={(email: string) => userFormInput('email', email)} 
+          inputPassword={(password: string) => userFormInput('password', password)} />  
+      }
     </div>
   );
 };
