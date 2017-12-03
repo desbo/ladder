@@ -1,20 +1,15 @@
 package app
 
 import (
-	"errors"
-	"fmt"
 	"time"
 
 	"firebase.google.com/go/auth"
 
-	"github.com/gosimple/slug"
 	"golang.org/x/net/context"
 
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 )
-
-const maxIDIncrements = 5
 
 type LadderPlayer struct {
 	Key      *datastore.Key `json:"key" datastore:"__key__"`
@@ -26,7 +21,7 @@ type LadderPlayer struct {
 
 // Ladder represents a single ladder
 type Ladder struct {
-	ID       string         `json:"id"`
+	Key      *datastore.Key `json:"key"`
 	Name     string         `json:"name"`
 	Created  time.Time      `json:"created"`
 	OwnerKey *datastore.Key `json:"ownerKey"`
@@ -63,6 +58,8 @@ func GetLadder(ctx context.Context, id string) (*Ladder, error) {
 		return nil, err
 	}
 
+	l.Key = key
+
 	return l, nil
 }
 
@@ -72,18 +69,29 @@ func GetLaddersForPlayer(ctx context.Context, token *auth.Token) (*PlayerLadders
 
 	key := PlayerKeyFromToken(ctx, token)
 
-	_, err := datastore.NewQuery(LadderKind).Filter("OwnerKey = ", key).GetAll(ctx, &owned)
+	ownedKeys, err := datastore.NewQuery(LadderKind).Filter("OwnerKey = ", key).GetAll(ctx, &owned)
 
 	if err != nil {
 		log.Errorf(ctx, "error querying owned ladders for %v: %v", key, err)
 		return nil, err
 	}
 
-	_, err = datastore.NewQuery(LadderKind).Filter("Players.Key = ", key).GetAll(ctx, &playing)
+	playerKeys, err := datastore.NewQuery(LadderKind).Filter("Players.Key = ", key).GetAll(ctx, &playing)
 
 	if err != nil {
 		log.Errorf(ctx, "error querying playing ladders for %v: %v", key, err)
 		return nil, err
+	}
+
+	keys := append(ownedKeys, playerKeys...)
+
+	// Set empty players to empty array, ensures `[]` rather than `null` in JSON response
+	for i, ladder := range append(owned, playing...) {
+		ladder.Key = keys[i]
+
+		if ladder.Players == nil {
+			ladder.Players = make([]LadderPlayer, 0)
+		}
 	}
 
 	return &PlayerLadders{
@@ -92,59 +100,8 @@ func GetLaddersForPlayer(ctx context.Context, token *auth.Token) (*PlayerLadders
 	}, nil
 }
 
-func generateID(ctx context.Context, l *Ladder, suffix int) string {
-	id := slug.Make(l.Name)
-
-	if suffix > 0 {
-		id = fmt.Sprintf("%s-%d", id, suffix)
-	}
-
-	return id
-}
-
-func attemptSave(ctx context.Context, l *Ladder, attempt int) func(ctx context.Context) error {
-	if attempt >= maxIDIncrements {
-		return func(ctx context.Context) error {
-			return errors.New("Unable to save ladder (ID conflict)")
-		}
-	}
-
-	id := generateID(ctx, l, attempt)
-	key := datastore.NewKey(ctx, LadderKind, id, 0, nil)
-	err := datastore.Get(ctx, key, &Ladder{})
-
-	if err == nil {
-		return attemptSave(ctx, l, attempt+1)
-	} else if err != datastore.ErrNoSuchEntity {
-		return func(ctx context.Context) error {
-			return err
-		}
-	}
-
-	l.ID = id
-
-	_, err = datastore.Put(ctx, key, l)
-
-	return func(ctx context.Context) error {
-		return err
-	}
-}
-
 // Save the ladder to the DB
 func (l *Ladder) Save(ctx context.Context) (*datastore.Key, error) {
-	if l.Name == "" {
-		return nil, errors.New("Attempted to save a Ladder that has no name")
-	}
-
-	if l.Players == nil {
-		l.Players = make([]LadderPlayer, 0)
-	}
-
-	err := datastore.RunInTransaction(ctx, attemptSave(ctx, l, 0), nil)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return datastore.NewKey(ctx, LadderKind, l.ID, 0, nil), nil
+	key := datastore.NewIncompleteKey(ctx, LadderKind, nil)
+	return datastore.Put(ctx, key, l)
 }
