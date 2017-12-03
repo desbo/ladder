@@ -19,8 +19,7 @@ const ViewLadder = ({
   match: match<{ id: string }>,
   ladders: Array<Ladder>
 }) => {
-  const ladderID = match.params.id;
-  const ladder = ladders.find(l => l.key === ladderID);
+  const ladder = ladders.find(l => l.id === match.params.id);
 
   return (
     <div>

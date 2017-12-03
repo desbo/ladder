@@ -7,6 +7,7 @@ import (
 
 	"golang.org/x/net/context"
 
+	"github.com/rs/xid"
 	"google.golang.org/appengine/datastore"
 	"google.golang.org/appengine/log"
 )
@@ -21,8 +22,8 @@ type LadderPlayer struct {
 
 // Ladder represents a single ladder
 type Ladder struct {
-	Key      *datastore.Key `json:"key"`
 	Name     string         `json:"name"`
+	ID       string         `json:"id"`
 	Created  time.Time      `json:"created"`
 	OwnerKey *datastore.Key `json:"ownerKey"`
 	Players  []LadderPlayer `datastore:",noindex" json:"players"`
@@ -38,6 +39,7 @@ type PlayerLadders struct {
 func NewLadder() *Ladder {
 	return &Ladder{
 		Created: time.Now(),
+		ID:      xid.New().String(),
 		Players: make([]LadderPlayer, 0),
 	}
 }
@@ -58,8 +60,6 @@ func GetLadder(ctx context.Context, id string) (*Ladder, error) {
 		return nil, err
 	}
 
-	l.Key = key
-
 	return l, nil
 }
 
@@ -69,26 +69,22 @@ func GetLaddersForPlayer(ctx context.Context, token *auth.Token) (*PlayerLadders
 
 	key := PlayerKeyFromToken(ctx, token)
 
-	ownedKeys, err := datastore.NewQuery(LadderKind).Filter("OwnerKey = ", key).GetAll(ctx, &owned)
+	_, err := datastore.NewQuery(LadderKind).Filter("OwnerKey = ", key).GetAll(ctx, &owned)
 
 	if err != nil {
 		log.Errorf(ctx, "error querying owned ladders for %v: %v", key, err)
 		return nil, err
 	}
 
-	playerKeys, err := datastore.NewQuery(LadderKind).Filter("Players.Key = ", key).GetAll(ctx, &playing)
+	_, err = datastore.NewQuery(LadderKind).Filter("Players.Key = ", key).GetAll(ctx, &playing)
 
 	if err != nil {
 		log.Errorf(ctx, "error querying playing ladders for %v: %v", key, err)
 		return nil, err
 	}
 
-	keys := append(ownedKeys, playerKeys...)
-
 	// Set empty players to empty array, ensures `[]` rather than `null` in JSON response
-	for i, ladder := range append(owned, playing...) {
-		ladder.Key = keys[i]
-
+	for _, ladder := range append(owned, playing...) {
 		if ladder.Players == nil {
 			ladder.Players = make([]LadderPlayer, 0)
 		}
@@ -102,6 +98,6 @@ func GetLaddersForPlayer(ctx context.Context, token *auth.Token) (*PlayerLadders
 
 // Save the ladder to the DB
 func (l *Ladder) Save(ctx context.Context) (*datastore.Key, error) {
-	key := datastore.NewIncompleteKey(ctx, LadderKind, nil)
+	key := datastore.NewKey(ctx, LadderKind, l.ID, 0, nil)
 	return datastore.Put(ctx, key, l)
 }
