@@ -20,3 +20,10 @@ export function setLoginMode(mode: LoginMode) {
     mode: mode
   }
 }
+
+export function setPlayerLadders(ladders: LadderState) {
+  return {
+    type: Actions.SET_PLAYER_LADDERS,
+    ladders: ladders
+  }
+}

@@ -1,12 +1,13 @@
 import * as React from 'react';
 
 import InputField from 'components/form/InputField';
+import { Link } from 'react-router-dom';
 
 function format(date: string): string {
   return new Date(Date.parse(date)).toLocaleString();
 }
 
-const YourLadders = ({ 
+const LadderList = ({ 
   owned, 
   playing, 
   className 
@@ -29,7 +30,7 @@ const YourLadders = ({
         {owned.map(ladder => {
 
           return <tr key={ladder.key}>
-            <td><a href={ladder.key}>{ladder.name}</a></td>
+            <td><Link to={`/ladder/${ladder.key}`}>{ladder.name}</Link></td>
             <td key={`${ladder.key}-date`}>{format(ladder.created)}</td>
           </tr>
         })}
@@ -38,5 +39,4 @@ const YourLadders = ({
   </div>
 );
 
-
-export default YourLadders;
+export default LadderList;

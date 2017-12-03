@@ -7,34 +7,45 @@ import { User } from 'firebase';
 import * as auth from 'auth';
 import API from 'api';
 
-import { Actions, signIn } from 'actions/actions';
-import Main from 'components/Main';
+import { Actions, signIn, setPlayerLadders } from 'actions/actions';
+
+import Router  from 'components/router';
 
 import userReducer from 'reducers/user';
 import viewReducer from 'reducers/view';
 import ladderReducer from 'reducers/ladder';
 
-const store: Store<AppState> = createStore(combineReducers({
-  user: userReducer,
-  view: viewReducer,
-  ladders: ladderReducer
-}));
-
 const firebaseApp = auth.initFirebase();
+
+const devToolEnhancer: any = 
+  (window as any)['__REDUX_DEVTOOLS_EXTENSION__'] && 
+  (window as any)['__REDUX_DEVTOOLS_EXTENSION__']();
+
+const store: Store<AppState> = createStore(
+  combineReducers({
+    user: userReducer,
+    view: viewReducer,
+    ladders: ladderReducer
+  }),
+  devToolEnhancer
+);
+
+const renderMain = () => ReactDOM.render(
+  <Provider store={store}>
+    <Router />
+  </Provider>,
+
+  document.getElementById('app')
+);
 
 firebaseApp.app.auth().onAuthStateChanged((user: null | User) => {
   if (user) {
     store.dispatch(signIn(user.displayName));
-    API.getLadders().then(ladders => store.dispatch({
-      type: Actions.SET_PLAYER_LADDERS,
-      ladders
-    }));
+
+    return API.getLadders()
+      .then(ladders => store.dispatch(setPlayerLadders(ladders)))
+      .then(renderMain);
   }
 
-  ReactDOM.render(
-    <Provider store={store}>
-      <Main />
-    </Provider>,
-    document.getElementById('app')
-  )
+  renderMain();
 });

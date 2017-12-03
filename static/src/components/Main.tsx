@@ -3,7 +3,6 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 
-import Navbar from 'components/nav/Navbar';
 import Login from 'components/Login';
 import Ladders from 'components/Ladders';
 
@@ -22,10 +21,6 @@ const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
 
   signIn: (email: string, password: string): Promise<any> => 
     firebase.signIn(email, password),
-
-  signOut: () => firebase.signOut().then(() => dispatch({
-    type: Actions.SIGN_OUT
-  })),
 
   register: (username: string, email: string, password: string): Promise<any> =>
     firebase.register(username, email, password)
@@ -48,34 +43,26 @@ type MainProps = {
   setLoginMode: (mode: LoginMode) => any,
   register: (username: string, email: string, password: string) => Promise<any>,
   signIn: (email: string, password: string) => Promise<any>,
-  signOut: () => Promise<any>,
   userFormInput: (field: string, value: string) => void
 };
 
-const Main = ({ user, view, setLoginMode, register, signIn, signOut, userFormInput }: MainProps) => {
+const Main = ({ user, view, setLoginMode, register, signIn, userFormInput }: MainProps) => {
   return (
     <div>
-      <Navbar username={user.username} signOut={signOut} />
+      {user.signedIn ? 
+        <Ladders /> :
 
-      <section className="section">
-        <div className="container">
-
-        {user.signedIn ? 
-          <Ladders /> :
-
-          <Login 
-            input={user.formInput}
-            mode={view.loginMode}
-            selectLogin={() => setLoginMode('login')}
-            selectRegister={() => setLoginMode('register')}
-            register={register}
-            signIn={signIn} 
-            inputName={(username: string) => userFormInput('username', username)} 
-            inputEmail={(email: string) => userFormInput('email', email)} 
-            inputPassword={(password: string) => userFormInput('password', password)} />  
-        }
-        </div>
-      </section>
+        <Login 
+          input={user.formInput}
+          mode={view.loginMode}
+          selectLogin={() => setLoginMode('login')}
+          selectRegister={() => setLoginMode('register')}
+          register={register}
+          signIn={signIn} 
+          inputName={(username: string) => userFormInput('username', username)} 
+          inputEmail={(email: string) => userFormInput('email', email)} 
+          inputPassword={(password: string) => userFormInput('password', password)} />  
+      }
     </div>
   );
 };

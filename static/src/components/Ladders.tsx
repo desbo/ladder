@@ -1,9 +1,8 @@
 import * as React from 'react';
 
-
 import { Actions } from 'actions/actions';
 
-import YourLadders from 'components/YourLadders';
+import LadderList from 'components/LadderList';
 import NewLadder from 'components/NewLadder';
 
 import { Dispatch } from 'redux';
@@ -32,8 +31,8 @@ const Ladders = ({
   createLadder: Function 
 }) =>
   <div className="columns">
-    <YourLadders owned={ladders.owned} playing={ladders.playing} className="column is-8" />
-    <NewLadder createLadder={createLadder} className="column is-4" />
+    <LadderList owned={ladders.owned} playing={ladders.playing} className="column is-7" />
+    <NewLadder createLadder={createLadder} className="column is-offset-1 is-4" />
   </div>
 
 export default connect(

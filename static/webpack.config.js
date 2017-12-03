@@ -16,7 +16,8 @@ module.exports = {
 
   devServer: {
     publicPath: '/public/',
-    port: 8081
+    port: 8081,
+    historyApiFallback: true
   },
 
   resolve: {
