@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { BrowserRouter, Route } from 'react-router-dom';
+import { BrowserRouter, Route, Redirect } from 'react-router-dom';
 import { connect, Dispatch } from 'react-redux';
 
 import { firebase } from 'auth';
@@ -21,6 +21,13 @@ const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
   })),
 });
 
+const AuthedRoute = ({ username, ...props }: { username: string, [prop: string]: any }) => {
+  if (!username) 
+    return <Redirect to="/"/>
+  else 
+    return <Route {...props} />
+}
+
 const Router = ({ username, signOut }: { username: string, signOut: Function }) =>
   <BrowserRouter>
     <div>
@@ -29,7 +36,7 @@ const Router = ({ username, signOut }: { username: string, signOut: Function }) 
       <section className="section">
         <div className="container">
           <Route exact path="/" component={Main} />
-          <Route path="/ladder/:id" component={ViewLadder} />
+          <AuthedRoute username={username} path="/ladder/:id" component={ViewLadder} />
         </div>
       </section>
     </div>
