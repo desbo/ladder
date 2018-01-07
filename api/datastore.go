@@ -14,6 +14,7 @@ import (
 const (
 	LadderKind = "Ladder"
 	PlayerKind = "Player"
+	GameKind   = "Game"
 )
 
 // DatastoreEntity is any entity that can exist in GAE datastore

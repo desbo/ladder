@@ -29,7 +29,10 @@ class API {
 
   registerPlayer(): Promise<any> {
     return API.fetchWithToken(`${this.url}/player`, {
-      method: 'POST'
+      method: 'POST',
+      body: JSON.stringify({
+        name: firebase.currentUser().displayName 
+      })
     })
   }
 }
