@@ -67,7 +67,7 @@ func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	ladder.OwnerKey = PlayerKeyFromToken(ctx, token)
+	ladder.SetOwner(ctx, token.UID)
 
 	save(ladder, w, r)
 }

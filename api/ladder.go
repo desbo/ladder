@@ -100,6 +100,18 @@ func GetLaddersForPlayer(ctx context.Context, token *auth.Token) (*PlayerLadders
 	}, nil
 }
 
+func (l *Ladder) SetOwner(ctx context.Context, firebaseID string) error {
+	p, err := GetPlayer(ctx, firebaseID)
+
+	if err != nil {
+		return err
+	}
+
+	l.OwnerKey = p.DatastoreKey(ctx)
+
+	return l.AddPlayer(ctx, p)
+}
+
 func (l *Ladder) ContainsPlayer(ctx context.Context, p *Player) bool {
 	for _, q := range l.Players {
 		if p.DatastoreKey(ctx).String() == q.Key.String() {
@@ -110,7 +122,7 @@ func (l *Ladder) ContainsPlayer(ctx context.Context, p *Player) bool {
 	return false
 }
 
-func (l *Ladder) AddPlayer(ctx context.Context, p *Player, playerName string) error {
+func (l *Ladder) AddPlayer(ctx context.Context, p *Player) error {
 	key := p.DatastoreKey(ctx)
 	_, err := GetPlayer(ctx, p.FirebaseID)
 
@@ -125,7 +137,7 @@ func (l *Ladder) AddPlayer(ctx context.Context, p *Player, playerName string) er
 	lp := LadderPlayer{
 		Key:      key,
 		Position: len(l.Players) + 1,
-		Name:     playerName,
+		Name:     p.Name,
 		Wins:     0,
 		Losses:   0,
 	}
