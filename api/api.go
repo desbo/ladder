@@ -81,7 +81,20 @@ func createPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	save(NewPlayerFromToken(token), w, r)
+	defer r.Body.Close()
+
+	form := struct {
+		Name string `json:"name"`
+	}{}
+
+	err = json.NewDecoder(r.Body).Decode(&form)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	save(NewPlayer(token, form.Name), w, r)
 }
 
 func init() {
