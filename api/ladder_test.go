@@ -64,8 +64,11 @@ func AddPlayersTest(ctx context.Context, ladderSize int, t *testing.T) {
 		name := fmt.Sprintf("Player %d", i)
 
 		player := &Player{
-			FirebaseID: fmt.Sprintf("%d", i),
-			Name:       name,
+			FirebaseID:       fmt.Sprintf("%d", i),
+			Name:             name,
+			Rating:           1500,
+			RatingDeviation:  350,
+			RatingVolatility: 0.06,
 		}
 
 		_, err := player.Save(ctx)

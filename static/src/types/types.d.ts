@@ -1,16 +1,19 @@
 // API URL, set in webpack config
 declare const API_URL: string;
 
+type LadderPlayer = {
+  position: number,
+  name: string,
+  wins: number,
+  losses: number,
+  rating: number
+}
+
 type Ladder = {
   name: string,
   id: string,
   created: string,
-  players: Array<{
-    position: number,
-    name: string,
-    wins: number,
-    losses: number
-  }>
+  players: Array<LadderPlayer>
 }
 
 /**

@@ -22,6 +22,7 @@ type LadderPlayer struct {
 	Position int            `json:"position"`
 	Wins     int            `json:"wins"`
 	Losses   int            `json:"losses"`
+	Rating   float64        `json:"rating"`
 }
 
 // Ladder represents a single ladder
@@ -30,7 +31,7 @@ type Ladder struct {
 	ID       string         `json:"id"`
 	Created  time.Time      `json:"created"`
 	OwnerKey *datastore.Key `json:"ownerKey"`
-	Players  []LadderPlayer `datastore:",noindex" json:"players"`
+	Players  []LadderPlayer `datastore:"noindex" json:"players"`
 }
 
 // PlayerLadders represents the ladders a player either owns or is playing in
@@ -47,6 +48,8 @@ func NewLadder() *Ladder {
 		Players: make([]LadderPlayer, 0),
 	}
 }
+
+const initialRating = 1000
 
 // GetLadder gets a ladder from an encoded Datastore key
 func GetLadder(ctx context.Context, encodedKey string) (*Ladder, error) {
@@ -140,6 +143,7 @@ func (l *Ladder) AddPlayer(ctx context.Context, p *Player) error {
 		Name:     p.Name,
 		Wins:     0,
 		Losses:   0,
+		Rating:   p.Rating,
 	}
 
 	l.Players = append(l.Players, lp)
@@ -153,15 +157,9 @@ func (l *Ladder) AddPlayer(ctx context.Context, p *Player) error {
 // - if the winner was previously ranked below the loser, swaps the player positions
 // - writes the ladder to the DB with the new results
 func (l *Ladder) LogGame(ctx context.Context, g *Game) error {
-	key := datastore.NewKey(ctx, GameKind, g.ID, 0, l.DatastoreKey(ctx))
-	_, err := datastore.Put(ctx, key, g)
-
-	if err != nil {
-		return err
-	}
 
 	var winner, loser LadderPlayer
-	winnerKey, loserKey := g.WinnerAndLoser()
+	winnerP, loserP := g.WinnerAndLoser()
 
 	// retrieve winner and loser from LadderPlayers
 	// remove them both now, to be added back after they're updated
@@ -169,10 +167,10 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) error {
 		p := l.Players[i]
 		remove := false
 
-		if p.Key.Equal(winnerKey) {
+		if p.Key.Equal(winnerP.DatastoreKey(ctx)) {
 			winner = p
 			remove = true
-		} else if p.Key.Equal(loserKey) {
+		} else if p.Key.Equal(loserP.DatastoreKey(ctx)) {
 			loser = p
 			remove = true
 		}
@@ -186,8 +184,22 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) error {
 		}
 	}
 
+	wr, lr, err := rank(ctx, g)
+
+	if err != nil {
+		return err
+	}
+
+	key := datastore.NewKey(ctx, GameKind, g.ID, 0, l.DatastoreKey(ctx))
+
+	if _, err = datastore.Put(ctx, key, g); err != nil {
+		return err
+	}
+
 	winner.Wins = winner.Wins + 1
+	winner.Rating = wr
 	loser.Losses = loser.Losses + 1
+	loser.Rating = lr
 
 	// swap positions if the winner was ranked lower (greater number) than the loser
 	if winner.Position > loser.Position {
