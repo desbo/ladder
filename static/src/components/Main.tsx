@@ -6,7 +6,7 @@ import { Dispatch } from 'redux';
 import Login from 'components/Login';
 import Ladders from 'components/Ladders';
 
-import { Actions , setLoginMode } from 'actions/actions';
+import { Actions , setLoginMode, showErrorModal, showInfoModal } from 'actions/actions';
 import { firebase } from 'auth';
 import { User } from 'firebase';
 
@@ -33,8 +33,13 @@ const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
     type: Actions.USER_FORM_INPUT,
     field,
     value
-  })
+  }),
+
+  showErrorModal: (error: string) => dispatch(showErrorModal(error)),
+  showInfoModal: (message: string) => dispatch(showInfoModal(message)),
 });
+
+type ShowModalFunction = (s: string) => void
 
 // type of the props passed into Main (as built by `connect`)
 type MainProps = { 
@@ -43,10 +48,12 @@ type MainProps = {
   setLoginMode: (mode: LoginMode) => any,
   register: (username: string, email: string, password: string) => Promise<any>,
   signIn: (email: string, password: string) => Promise<any>,
-  userFormInput: (field: string, value: string) => void
+  userFormInput: (field: string, value: string) => void,
+  showErrorModal: ShowModalFunction,
+  showInfoModal: ShowModalFunction
 };
 
-const Main = ({ user, view, setLoginMode, register, signIn, userFormInput }: MainProps) => {
+const Main = ({ user, view, setLoginMode, register, signIn, userFormInput, showErrorModal, showInfoModal }: MainProps) => {
   return (
     <div>
       {user.signedIn ? 
@@ -61,7 +68,8 @@ const Main = ({ user, view, setLoginMode, register, signIn, userFormInput }: Mai
           signIn={signIn} 
           inputName={(username: string) => userFormInput('username', username)} 
           inputEmail={(email: string) => userFormInput('email', email)} 
-          inputPassword={(password: string) => userFormInput('password', password)} />  
+          inputPassword={(password: string) => userFormInput('password', password)} 
+          onError={(error: string) => showErrorModal(error) }/>  
       }
     </div>
   );

@@ -21,11 +21,15 @@ export class FirebaseApp {
     this.app = firebase.initializeApp(config);
   }
 
-  register(username: string, email: string, password: string): Promise<User> {
-    return this.app.auth().createUserWithEmailAndPassword(email, password)
-      .then(() => this.updateProfile(username, ''))
-      .then(() => API.registerPlayer())
-      .then(() => this.app.auth().currentUser);
+  register(username: string, email: string, password: string): Promise<any> {
+    try {
+      return this.app.auth().createUserWithEmailAndPassword(email, password)
+        .then(() => this.updateProfile(username, ''))
+        .then(() => API.registerPlayer())
+        .then(() => this.app.auth().currentUser);
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
 
   signIn(email: string, password: string): Promise<User> {
