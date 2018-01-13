@@ -64,8 +64,11 @@ func AddPlayersTest(ctx context.Context, ladderSize int, t *testing.T) {
 		name := fmt.Sprintf("Player %d", i)
 
 		player := &Player{
-			FirebaseID: fmt.Sprintf("%d", i),
-			Name:       name,
+			FirebaseID:       fmt.Sprintf("%d", i),
+			Name:             name,
+			Rating:           1000,
+			RatingDeviation:  350,
+			RatingVolatility: 0.06,
 		}
 
 		_, err := player.Save(ctx)
@@ -140,4 +143,5 @@ func SubmitGameTest(ctx context.Context, t *testing.T) {
 	if l.Players[1].Name != loser.Name {
 		t.Fatalf("position of loser set incorrectly")
 	}
+
 }

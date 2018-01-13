@@ -12,19 +12,6 @@ const mapStateToProps = (state: AppState) => ({
   ladders: state.ladders.owned.concat(state.ladders.playing)
 })
 
-const signupURL = (ladder: Ladder): string => {
-  const link = document.createElement("a")
-  link.setAttribute('href', `/join/${ladder.id}`)
-  return link.href;
-}
-
-const copy = (text: string) => {
-  const el = document.createElement('textarea');
-  el.innerHTML = text
-  el.select()
-  document.execCommand('copy');
-}
-
 const ViewLadder = ({ 
   match, 
   ladders,
@@ -46,6 +33,7 @@ const ViewLadder = ({
               <th>Played</th>
               <th>Won</th>
               <th>Lost</th>
+              <th>Rating</th>
             </tr>
           </thead>
 
@@ -56,6 +44,7 @@ const ViewLadder = ({
               <td>{p.wins + p.losses}</td>
               <td>{p.wins}</td>
               <td>{p.losses}</td>
+              <td>{p.rating}</td>
             </tr>)}
           </tbody>
         </table>
@@ -63,8 +52,6 @@ const ViewLadder = ({
 
       <div className="column is-4 is-offset-2">
         <h2 className="title is-4">signup link</h2>
-        <span className="tag is-light">{signupURL(ladder)}</span>
-        <a onClick={copy.bind(null, signupURL(ladder))} className="button is-small">copy</a>
       </div>
     </div>
   );

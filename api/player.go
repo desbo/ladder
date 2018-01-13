@@ -11,14 +11,22 @@ import (
 // Player is a user in the system that can create and join ladders
 // FirebaseID is used as the datastore key
 type Player struct {
-	FirebaseID string `json:"-"`
-	Name       string `json:"name"`
+	FirebaseID       string  `json:"-"`
+	Name             string  `json:"name"`
+	Rating           float64 `json:"rating"`
+	RatingDeviation  float64 `json:"-"`
+	RatingVolatility float64 `json:"-"`
 }
 
+// NewPlayer creates a new player
+// Initial rating values are based on http://www.glicko.net/glicko/glicko2.pdf
 func NewPlayer(token *auth.Token, name string) *Player {
 	return &Player{
-		FirebaseID: token.UID,
-		Name:       name,
+		FirebaseID:       token.UID,
+		Name:             name,
+		Rating:           1000,
+		RatingDeviation:  350,
+		RatingVolatility: 0.06,
 	}
 }
 
@@ -50,6 +58,10 @@ func PlayerFromLadderPlayer(ctx context.Context, lp LadderPlayer) (*Player, erro
 
 func (p *Player) DatastoreKey(ctx context.Context) *datastore.Key {
 	return datastore.NewKey(ctx, PlayerKind, p.FirebaseID, 0, nil)
+}
+
+func (p *Player) Equals(o Player) bool {
+	return p.FirebaseID == o.FirebaseID
 }
 
 // Save a player to the DB
