@@ -20,7 +20,8 @@ type Ladder = {
 type AppState = {
   user: UserState,
   view: ViewState,
-  ladders: LadderState
+  ladders: LadderState,
+  modal: ModalState
 }
 
 // Login/Registration input
@@ -45,4 +46,16 @@ type LadderState = {
   playing: Array<Ladder>
 }
 
+type ModalMessageLevel = 'info' | 'error';
+
+type ModalState = {
+  level: ModalMessageLevel,
+  message: string,
+  active: boolean
+}
+
 type LoginMode = 'register' | 'login';
+
+type AppError = {
+  message: string
+}

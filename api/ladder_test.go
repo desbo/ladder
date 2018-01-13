@@ -74,7 +74,7 @@ func AddPlayersTest(ctx context.Context, ladderSize int, t *testing.T) {
 			t.Fatalf("error saving player %v: %s", player, err.Error())
 		}
 
-		err = l.AddPlayer(ctx, player, name)
+		err = l.AddPlayer(ctx, player)
 
 		if err != nil {
 			t.Fatalf("error after adding player %v: %s", player, err.Error())

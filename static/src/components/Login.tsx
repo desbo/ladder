@@ -17,7 +17,8 @@ export default class Login extends React.Component {
     signIn: (email: string, password: string) => Promise<any>,
     inputName: (username: string) => void,
     inputEmail: (email: string) => void,
-    inputPassword: (password: string) => void
+    inputPassword: (password: string) => void,
+    onError: (message: string) => void
   }
 
   validate(f: Function) {
@@ -27,6 +28,10 @@ export default class Login extends React.Component {
 
     if (fieldsToCheck.every(e => e.validity.valid)) 
       return f();
+  }
+
+  onError(e: AppError) {
+    return this.props.onError(e.message);
   }
 
   render() {
@@ -73,11 +78,13 @@ export default class Login extends React.Component {
                   className="button is-primary is-medium" 
                   onClick={() => this.validate(() => 
                     this.props.signIn(userInput.email, userInput.password))
+                      .catch(this.onError.bind(this))
                   }>login</button> :
 
                 <button className="button is-primary is-medium" 
                   onClick={() => this.validate(() => {
-                    this.props.register(userInput.username, userInput.email, userInput.password);
+                    this.props.register(userInput.username, userInput.email, userInput.password)
+                      .catch(this.onError.bind(this))
                   })}>register</button>
               }
             </div>

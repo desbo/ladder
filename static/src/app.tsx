@@ -14,6 +14,7 @@ import Router  from 'components/router';
 import userReducer from 'reducers/user';
 import viewReducer from 'reducers/view';
 import ladderReducer from 'reducers/ladder';
+import modalReducer from 'reducers/modal';
 
 const firebaseApp = auth.initFirebase();
 
@@ -25,7 +26,8 @@ const store: Store<AppState> = createStore(
   combineReducers({
     user: userReducer,
     view: viewReducer,
-    ladders: ladderReducer
+    ladders: ladderReducer,
+    modal: modalReducer
   }),
   devToolEnhancer
 );
