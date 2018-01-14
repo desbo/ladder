@@ -9,7 +9,7 @@ import (
 	"google.golang.org/appengine/datastore"
 )
 
-var OpaqueLadderKey string // used to retrieve ladder after creation
+const LadderKey string = "test"
 
 // TestLadders represents an end-to-end test of:
 // - creating a ladder
@@ -34,12 +34,11 @@ func TestLadders(t *testing.T) {
 
 func CreateLadderTest(ctx context.Context, t *testing.T) {
 	l := NewLadder()
-	l.ID = "test"
+	l.ID = LadderKey
 	l.Name = "test ladder"
 	l.Save(ctx)
 
 	key := datastore.NewKey(ctx, LadderKind, l.ID, 0, nil)
-	OpaqueLadderKey = key.Encode()
 	result := NewLadder()
 
 	err := datastore.Get(ctx, key, result)
@@ -54,10 +53,10 @@ func CreateLadderTest(ctx context.Context, t *testing.T) {
 }
 
 func AddPlayersTest(ctx context.Context, ladderSize int, t *testing.T) {
-	l, err := GetLadder(ctx, OpaqueLadderKey)
+	l, err := GetLadder(ctx, LadderKey)
 
 	if err != nil {
-		t.Fatalf("could not get ladder with ID %s: %s", OpaqueLadderKey, err.Error())
+		t.Fatalf("could not get ladder with ID %s: %s", LadderKey, err.Error())
 	}
 
 	for i := 0; i < ladderSize; i++ {
@@ -100,10 +99,10 @@ func AddPlayersTest(ctx context.Context, ladderSize int, t *testing.T) {
 }
 
 func SubmitGameTest(ctx context.Context, t *testing.T) {
-	l, err := GetLadder(ctx, OpaqueLadderKey)
+	l, err := GetLadder(ctx, LadderKey)
 
 	if err != nil {
-		t.Fatalf("could not get ladder with ID %s: %s", OpaqueLadderKey, err.Error())
+		t.Fatalf("could not get ladder with ID %s: %s", LadderKey, err.Error())
 	}
 
 	players := make([]*Player, len(l.Players))
