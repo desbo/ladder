@@ -1,5 +1,6 @@
 import { error } from "util";
 import { Action, AnyAction } from "redux";
+import Ladders from "components/Ladders";
 
 export enum Actions {
   SET_LOGIN_MODE = 'SET_LOGIN_MODE',
@@ -8,6 +9,7 @@ export enum Actions {
   USER_FORM_INPUT = 'USER_FORM_INPUT',
 
   SET_PLAYER_LADDERS = 'SET_PLAYER_LADDERS',
+  SET_CURRENT_LADDER = 'SET_CURRENT_LADDER',
 
   SHOW_MODAL = 'SHOW_MODAL',
   HIDE_MODAL = 'HIDE_MODAL'
@@ -31,6 +33,13 @@ export function setPlayerLadders(ladders: LadderState) {
   return {
     type: Actions.SET_PLAYER_LADDERS,
     ladders: ladders
+  }
+}
+
+export function setCurrentLadder(ladder: Ladder) {
+  return {
+    type: Actions.SET_CURRENT_LADDER,
+    ladder: ladder
   }
 }
 

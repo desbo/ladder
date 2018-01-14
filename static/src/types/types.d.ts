@@ -46,7 +46,8 @@ type ViewState = {
 
 type LadderState = {
   owned: Array<Ladder>,
-  playing: Array<Ladder>
+  playing: Array<Ladder>,
+  current: Ladder
 }
 
 type ModalMessageLevel = 'info' | 'error';

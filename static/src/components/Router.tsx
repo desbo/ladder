@@ -32,29 +32,26 @@ const AuthedRoute = ({ username, ...props }: { username: string, [prop: string]:
 }
 
 const Router = ({ username, modal, signOut, closeModal }: { username: string, modal: ModalState, signOut: Function, closeModal: Function }) => {
-  return (<BrowserRouter>
-    <div>
-      {modal.active && (
-        <Modal level={modal.level} active={modal.active} close={closeModal}>
-          {modal.message}
-        </Modal>
-      )}
+  return (
+    <BrowserRouter>
+      <div>
+        {modal.active && (
+          <Modal level={modal.level} active={modal.active} close={closeModal}>
+            {modal.message}
+          </Modal>
+        )}
+        
+        <Navbar username={username} signOut={signOut} />
 
-      <Navbar username={username} signOut={signOut} />
-
-      <section className="section">
-        <div className="container">
-          <Switch>
-            <Route exact path="/" component={Main} />
-            <AuthedRoute username={username} path="/ladder/:id" component={ViewLadder} />
-          </Switch>
-        </div>
-      </section>
-    </div>
-    </BrowserRouter>);
+        <Switch>
+          <Route exact path="/" component={Main} />
+          <Route path="/ladder/:id" component={ViewLadder} />
+        </Switch>
+      </div>
+    </BrowserRouter>
+  );
 }
   
-
 export default connect(
   mapStateToProps,
   mapDispatchToProps

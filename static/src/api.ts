@@ -23,8 +23,18 @@ class API {
     });
   }
 
+  getLadder(id: string): Promise<any> {
+    return API.fetchWithToken(`${this.url}/ladder/${id}`)
+  }
+
   getLadders(): Promise<any> {
     return API.fetchWithToken(`${this.url}/ladders`);
+  }
+
+  joinLadder(id: string): Promise<any> {
+    return API.fetchWithToken(`${this.url}/join/${id}`, {
+      method: 'POST'
+    })
   }
 
   registerPlayer(): Promise<any> {

@@ -52,16 +52,10 @@ func NewLadder() *Ladder {
 const initialRating = 1000
 
 // GetLadder gets a ladder from an encoded Datastore key
-func GetLadder(ctx context.Context, encodedKey string) (*Ladder, error) {
-	l := &Ladder{}
-
-	key, err := datastore.DecodeKey(encodedKey)
-
-	if err != nil {
-		return nil, err
-	}
-
-	err = datastore.Get(ctx, key, l)
+func GetLadder(ctx context.Context, id string) (*Ladder, error) {
+	l := &Ladder{ID: id}
+	key := l.DatastoreKey(ctx)
+	err := datastore.Get(ctx, key, l)
 
 	if err != nil {
 		return nil, err

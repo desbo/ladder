@@ -8,7 +8,7 @@ const UserMenu = ({ username, signOut }: { username: string, signOut: Function }
       <div className="navbar-item has-dropdown is-hoverable">
         <div className="navbar-link">{username}</div>
         <div className="navbar-dropdown">
-          <a className="navbar-item" onClick={() => signOut()}>Log Off</a>
+          <a className="navbar-item" onClick={() => signOut()}>Sign out</a>
         </div>
       </div>
     </div>
