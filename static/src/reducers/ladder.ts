@@ -5,7 +5,8 @@ import { access } from 'fs';
 const initialState: LadderState = {
   owned: [],
   playing: [],
-  current: undefined
+  current: undefined,
+  opponent: undefined
 }
 
 const sortLadder = (a: Ladder, b: Ladder) => 
@@ -22,6 +23,11 @@ export default function ladderReducer(state = initialState, action: AnyAction): 
     case Actions.SET_CURRENT_LADDER: 
       return Object.assign({}, state, {
         current: action.ladder
+      });
+
+    case Actions.SELECT_OPPONENT:
+      return Object.assign({}, state, {
+        opponent: action.opponent
       });
 
     default:

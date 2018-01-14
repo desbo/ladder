@@ -1,21 +1,37 @@
 import * as React from 'react';
 
-import { Actions, setCurrentLadder } from 'actions/actions';
+import { RouteProps, match, Redirect } from 'react-router';
+import { ReactNode } from 'react';
+
+import { Actions, setCurrentLadder, selectOpponent } from 'actions/actions';
 
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
 import Table from 'components/ladder/Table'
+import SubmitGame from 'components/ladder/SubmitGame'
+import PlayerDropdown from 'components/ladder/PlayerDropdown'
+import Login from 'components/Login';
 
 import API from 'api';
-import { RouteProps, match, Redirect } from 'react-router';
-import { ReactNode } from 'react';
-import Login from 'components/Login';
+
+const mapStateToProps = (state: AppState) => ({
+  ladder: state.ladders.current,
+  opponent: state.ladders.opponent,
+  user: state.user
+})
+
+const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
+  setLadder: (ladder: Ladder) => dispatch(setCurrentLadder(ladder)),
+  selectOpponent: (opponent: LadderPlayer) => dispatch(selectOpponent(opponent))
+})
 
 type Props = {
   ladder: Ladder,
-  signedIn: boolean,
+  opponent: LadderPlayer,
+  user: UserState,
   setLadder: (ladder: Ladder) => any,
+  selectOpponent: (opponent: LadderPlayer) => any,
   match: match<{ id: string }>
 };
 
@@ -65,19 +81,34 @@ class ViewLadder extends React.Component<Props, State> {
                   <Table ladder={this.props.ladder} />
                 </div>
 
-                <div className="column is-offset-2 is-4">
-                {this.props.signedIn && 
-                  <h2 className="subtitle is-4">submit game</h2>
+                {this.props.user.signedIn && 
+                  <div className="column is-offset-1 is-5">
+                    <div style={{"marginBottom": "-8px"}} className="columns level is-mobile">
+                      <div className="column is-6">
+                        <h2 className="subtitle is-4 level-item level-left">submit game</h2>
+                      </div>
+                      <div className="column is-6">
+                        <PlayerDropdown 
+                          players={this.props.ladder.players.filter(p => p.name !== this.props.user.username )}
+                          onSelect={this.props.selectOpponent} />
+                      </div>
+                    </div>
+                    
+                    <SubmitGame 
+                      user={this.props.user} 
+                      ladder={this.props.ladder} 
+                      opponent={this.props.opponent} />
+                  </div>
                 }
 
-                {!this.props.signedIn && 
-                <div>
-                  <h2 className="subtitle is-4">join this ladder</h2>
-                  <Login fullWidth={true} registerOnly={true}
-                         onRegister={this.join.bind(this)} />
-                </div>
+                {!this.props.user.signedIn && 
+                  <div className="column is-offset-1 is-5">
+                    <h2 className="subtitle is-4">join this ladder</h2>
+                    <Login fullWidth={true} registerOnly={true}
+                          onRegister={this.join.bind(this)} />
+                  </div>
                 }
-                </div>
+
               </div>
             </div>
           </section>
@@ -90,15 +121,6 @@ class ViewLadder extends React.Component<Props, State> {
     }
   }
 }
-
-const mapStateToProps = (state: AppState) => ({
-  ladder: state.ladders.current,
-  signedIn: state.user.signedIn
-})
-
-const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
-  setLadder: (ladder: Ladder) => dispatch(setCurrentLadder(ladder))
-})
 
 export default connect(
   mapStateToProps,

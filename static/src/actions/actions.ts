@@ -11,6 +11,8 @@ export enum Actions {
   SET_PLAYER_LADDERS = 'SET_PLAYER_LADDERS',
   SET_CURRENT_LADDER = 'SET_CURRENT_LADDER',
 
+  SELECT_OPPONENT = 'SELECT_OPPONENT',
+
   SHOW_MODAL = 'SHOW_MODAL',
   HIDE_MODAL = 'HIDE_MODAL'
 }
@@ -56,3 +58,8 @@ export const showErrorModal = (errorMessage: string): AnyAction =>
 
 export const showInfoModal = (message: string): AnyAction => 
   showModal(message, 'info')
+
+export const selectOpponent = (opponent: LadderPlayer): AnyAction => ({
+  type: Actions.SELECT_OPPONENT,
+  opponent: opponent
+})

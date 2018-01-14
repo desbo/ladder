@@ -45,6 +45,17 @@ class API {
       })
     })
   }
+
+  submitGame(opponent: LadderPlayer, myScore: number, theirScore: number) {
+    return API.fetchWithToken(`${this.url}/game`, {
+      method: 'POST',
+      body: JSON.stringify({
+        opponentKey: opponent.key,
+        myScore: myScore,
+        theirScore: theirScore
+      })
+    })
+  }
 }
 
 export default new API(API_URL);
