@@ -10,6 +10,7 @@ import (
 )
 
 const LadderKey string = "test"
+const LadderSize = 20
 
 // TestLadders represents an end-to-end test of:
 // - creating a ladder
@@ -28,7 +29,7 @@ func TestLadders(t *testing.T) {
 	defer done()
 
 	t.Run("Create ladder", func(t *testing.T) { CreateLadderTest(ctx, t) })
-	t.Run("Add players", func(t *testing.T) { AddPlayersTest(ctx, 20, t) })
+	t.Run("Add players", func(t *testing.T) { AddPlayersTest(ctx, LadderSize, t) })
 	t.Run("Submit game", func(t *testing.T) { SubmitGameTest(ctx, t) })
 }
 
@@ -118,8 +119,8 @@ func SubmitGameTest(ctx context.Context, t *testing.T) {
 	// match should result in a swap
 	winner := players[1]
 	loser := players[0]
-	game := NewGame(ctx, winner, loser, 11, 5)
-	err = l.LogGame(ctx, game)
+	game := NewGame(winner, loser, 11, 5)
+	_, err = l.LogGame(ctx, game)
 
 	if err != nil {
 		t.Fatalf("error logging game: %s", err.Error())
@@ -141,5 +142,9 @@ func SubmitGameTest(ctx context.Context, t *testing.T) {
 
 	if l.Players[1].Name != loser.Name {
 		t.Fatalf("position of loser set incorrectly")
+	}
+
+	if len(l.Players) != LadderSize {
+		t.Fatalf("wrong number of players in ladder after game: got %d, expected %d", len(l.Players), LadderSize)
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
 	"google.golang.org/appengine"
+	"google.golang.org/appengine/log"
 )
 
 type playerPostData struct {
