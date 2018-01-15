@@ -52,8 +52,11 @@ export class FirebaseApp {
     return this.app.auth().currentUser;
   }
 
-  getToken(): Promise<any> { 
-    return this.currentUser().getIdToken();
+  getToken(): Promise<any> {
+    if (this.currentUser()) 
+      return this.currentUser().getIdToken();
+    else
+      return Promise.resolve();
   }
 
   signedIn(): boolean {

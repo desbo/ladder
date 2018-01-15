@@ -23,8 +23,18 @@ class API {
     });
   }
 
+  getLadder(id: string): Promise<any> {
+    return API.fetchWithToken(`${this.url}/ladder/${id}`)
+  }
+
   getLadders(): Promise<any> {
     return API.fetchWithToken(`${this.url}/ladders`);
+  }
+
+  joinLadder(id: string): Promise<any> {
+    return API.fetchWithToken(`${this.url}/join/${id}`, {
+      method: 'POST'
+    })
   }
 
   registerPlayer(): Promise<any> {
@@ -32,6 +42,18 @@ class API {
       method: 'POST',
       body: JSON.stringify({
         name: firebase.currentUser().displayName 
+      })
+    })
+  }
+
+  submitGame(ladderID: string, opponent: LadderPlayer, myScore: number, theirScore: number) {
+    return API.fetchWithToken(`${this.url}/game`, {
+      method: 'POST',
+      body: JSON.stringify({
+        opponentKey: opponent.key,
+        ladderID,
+        myScore,
+        theirScore
       })
     })
   }

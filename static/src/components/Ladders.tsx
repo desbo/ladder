@@ -28,7 +28,7 @@ const Ladders = ({
   createLadder 
 }: { 
   ladders: LadderState, 
-  createLadder: Function 
+  createLadder: Function
 }) =>
   <div className="columns">
     <LadderList owned={ladders.owned} playing={ladders.playing} className="column is-7" />
