@@ -11,7 +11,7 @@ import (
 
 const τ = 0.6
 
-type result = float64
+type result float64
 
 // glicko2 values for win/loss from perspective of player to be ranked
 const win result = 1.0
@@ -36,7 +36,7 @@ func (o Opponent) Sigma() float64 {
 }
 
 func (o Opponent) SJ() float64 {
-	return o.Result
+	return float64(o.Result)
 }
 
 func newOpponent(p Player, outcome result) Opponent {
