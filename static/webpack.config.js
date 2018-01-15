@@ -1,6 +1,8 @@
 /* eslint-env node */
 const webpack = require('webpack');
 const path = require('path');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+
 
 const prod = process.env.NODE_ENV === 'production';
 
@@ -42,7 +44,14 @@ module.exports = {
 
   plugins: [
     new webpack.DefinePlugin({
-      API_URL: JSON.stringify(prod ? 'https://something.com' : 'http://localhost:8080')
-    })
+      API_URL: JSON.stringify(prod ? 'https://api-dot-tt-ladder.appspot.com' : 'http://localhost:8080'),
+      'process.env': {
+        'NODE_ENV': JSON.stringify(prod ? 'production' : '')
+      }
+    }),
+
+    prod ? new UglifyJsPlugin({
+      parallel: true
+    }) : null
   ]
 };

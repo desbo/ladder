@@ -1,7 +1,5 @@
 # note: note useful for development (use webpack-dev-server)
 # but could be useful to deploy to prod
-service: static
-
 runtime: python27
 api_version: 1
 threadsafe: true
@@ -11,9 +9,9 @@ handlers:
   static_files: index.html
   upload: index.html
 
-- url: /(.*)
-  static_files: \1
-  upload: /(.*)
+- url: /public
+  static_dir: public
 
 skip_files:
 - ^.*node_modules(/.*)?
+- ^.*src(/.*)?
