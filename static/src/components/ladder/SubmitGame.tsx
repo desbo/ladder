@@ -5,7 +5,8 @@ import API from 'api';
 type Props = { 
   ladder: Ladder, 
   user: UserState, 
-  opponent: LadderPlayer 
+  opponent: LadderPlayer,
+  onSubmit: (game: Game) => any
 }
 
 type State = {
@@ -39,6 +40,10 @@ const PlayerScoreInput = ({ name, placeholder, value, onChange, ...props}: Score
   </div>
 
 export default class SubmitGame extends React.Component<Props, State> {
+  private static defaultProps: Partial<Props> = {
+    onSubmit: (game: Game) => null
+  }
+
   constructor(props: Props) {
     super(props);
     this.state = {
@@ -65,7 +70,7 @@ export default class SubmitGame extends React.Component<Props, State> {
       this.props.opponent, 
       parseInt(this.state.scores.user), 
       parseInt(this.state.scores.opponent)
-    )
+    ).then((game: Game) => this.props.onSubmit(game))
   }
 
   render() {

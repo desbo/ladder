@@ -17,6 +17,23 @@ type Ladder = {
   players: Array<LadderPlayer>
 }
 
+type Player = {
+  name: string,
+  rating: number
+}
+
+type PlayerResult = {
+  player: Player,
+  score: number
+}
+
+type Game = {
+  id: string,
+  date: string,
+  player1: PlayerResult,
+  player2: PlayerResult
+}
+
 /**
  * overall state for the app 
  * (built by combineReducers)

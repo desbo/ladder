@@ -97,7 +97,8 @@ class ViewLadder extends React.Component<Props, State> {
                     <SubmitGame 
                       user={this.props.user} 
                       ladder={this.props.ladder} 
-                      opponent={this.props.opponent} />
+                      opponent={this.props.opponent}
+                      onSubmit={this.fetch.bind(this)} />
                   </div>
                 }
 
