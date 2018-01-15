@@ -61,6 +61,7 @@ export default class SubmitGame extends React.Component<Props, State> {
 
   submit() {
     return API.submitGame(
+      this.props.ladder.id,
       this.props.opponent, 
       parseInt(this.state.scores.user), 
       parseInt(this.state.scores.opponent)

@@ -2,9 +2,11 @@ package app
 
 import (
 	"fmt"
+	"net/http"
 
 	"firebase.google.com/go/auth"
 	"golang.org/x/net/context"
+	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
 )
 
@@ -41,6 +43,21 @@ func GetPlayer(ctx context.Context, firebaseID string) (*Player, error) {
 	return p, nil
 }
 
+func GetPlayerByEncodedKey(ctx context.Context, key string) (*Player, error) {
+	p := &Player{}
+	dec, err := datastore.DecodeKey(key)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err = datastore.Get(ctx, dec, p); err != nil {
+		return nil, err
+	}
+
+	return p, nil
+}
+
 func PlayerKeyFromToken(ctx context.Context, token *auth.Token) *datastore.Key {
 	return datastore.NewKey(ctx, PlayerKind, token.UID, 0, nil)
 }
@@ -54,6 +71,17 @@ func PlayerFromLadderPlayer(ctx context.Context, lp LadderPlayer) (*Player, erro
 	}
 
 	return p, nil
+}
+
+func PlayerFromRequest(r *http.Request) (*Player, error) {
+	ctx := appengine.NewContext(r)
+	token, err := initAndVerifyToken(ctx, r)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return GetPlayer(ctx, token.UID)
 }
 
 func (p *Player) DatastoreKey(ctx context.Context) *datastore.Key {

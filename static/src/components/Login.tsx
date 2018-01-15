@@ -143,7 +143,7 @@ class Login extends React.Component<Props> {
                 <button className="button is-primary is-medium" 
                   onClick={() => this.validate(() => {
                     this.props.register(userInput.username, userInput.email, userInput.password)
-                      .then(() => this.props.onRegister())
+                      .then(this.props.onRegister)
                       .catch(this.onError.bind(this))
                   })}>register</button>
               }

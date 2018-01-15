@@ -150,7 +150,7 @@ func (l *Ladder) AddPlayer(ctx context.Context, p *Player) error {
 // - updates boh Player's wins/losses in this ladder
 // - if the winner was previously ranked below the loser, swaps the player positions
 // - writes the ladder to the DB with the new results
-func (l *Ladder) LogGame(ctx context.Context, g *Game) error {
+func (l *Ladder) LogGame(ctx context.Context, g *Game) (*Game, error) {
 
 	var winner, loser LadderPlayer
 	winnerP, loserP := g.WinnerAndLoser()
@@ -173,7 +173,7 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) error {
 			err := l.removeNthPlayer(i)
 
 			if err != nil {
-				return err
+				return nil, err
 			}
 		}
 	}
@@ -181,13 +181,13 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) error {
 	wr, lr, err := rank(ctx, g)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	key := datastore.NewKey(ctx, GameKind, g.ID, 0, l.DatastoreKey(ctx))
 
 	if _, err = datastore.Put(ctx, key, g); err != nil {
-		return err
+		return nil, err
 	}
 
 	winner.Wins = winner.Wins + 1
@@ -201,9 +201,12 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) error {
 	}
 
 	l.Players = append(l.Players, winner, loser)
-	_, err = l.Save(ctx)
 
-	return err
+	if _, err = l.Save(ctx); err != nil {
+		return nil, err
+	}
+
+	return g, nil
 }
 
 func (l *Ladder) removeNthPlayer(n int) error {

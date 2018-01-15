@@ -1,7 +1,6 @@
 package app
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -9,19 +8,19 @@ import (
 )
 
 type playerResult struct {
-	Player       Player
-	Score        int
-	RatingChange float64
+	Player       Player  `json:"player"`
+	Score        int     `json:"score"`
+	RatingChange float64 `json:"ratingChange"`
 }
 
 type Game struct {
-	ID      string
-	Date    time.Time
-	Player1 playerResult
-	Player2 playerResult
+	ID      string       `json:"id"`
+	Date    time.Time    `json:"submitted"`
+	Player1 playerResult `json:"player1"`
+	Player2 playerResult `json:"player2"`
 }
 
-func newPlayerResult(ctx context.Context, p *Player, score int) playerResult {
+func newPlayerResult(p *Player, score int) playerResult {
 	return playerResult{
 		Player: *p,
 		Score:  score,
@@ -50,11 +49,11 @@ func (g *Game) SetRatingChange(p Player, change float64) error {
 }
 
 // NewGame creates a new game
-func NewGame(ctx context.Context, p1 *Player, p2 *Player, p1score int, p2score int) *Game {
+func NewGame(p1 *Player, p2 *Player, p1score int, p2score int) *Game {
 	return &Game{
 		ID:      xid.New().String(),
 		Date:    time.Now(),
-		Player1: newPlayerResult(ctx, p1, p1score),
-		Player2: newPlayerResult(ctx, p2, p2score),
+		Player1: newPlayerResult(p1, p1score),
+		Player2: newPlayerResult(p2, p2score),
 	}
 }
