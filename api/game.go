@@ -10,9 +10,12 @@ import (
 )
 
 type playerResult struct {
-	Player       Player  `json:"player"`
-	Score        int     `json:"score"`
-	RatingChange float64 `json:"ratingChange"`
+	Player Player `json:"player"`
+	Score  int    `json:"score"`
+
+	// RatingChange is how much this game altered the player's rating.
+	// Note that the ratings included in Player here are the ones before this alteration.
+	RatingChange int `json:"ratingChange"`
 }
 
 type Game struct {
@@ -61,7 +64,7 @@ func (g *Game) SavePlayers(ctx context.Context) error {
 	return nil
 }
 
-func (g *Game) SetRatingChange(p Player, change float64) error {
+func (g *Game) SetRatingChange(p Player, change int) error {
 	if g.Player1.Player.Equals(p) {
 		g.Player1.RatingChange = change
 	} else if g.Player2.Player.Equals(p) {

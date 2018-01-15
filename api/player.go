@@ -14,7 +14,7 @@ import (
 type Player struct {
 	FirebaseID       string  `json:"-"`
 	Name             string  `json:"name"`
-	Rating           float64 `json:"rating,int"`
+	Rating           int     `json:"rating,int"`
 	RatingDeviation  float64 `json:"-"`
 	RatingVolatility float64 `json:"-"`
 }

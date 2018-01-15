@@ -22,7 +22,7 @@ type LadderPlayer struct {
 	Position int            `json:"position"`
 	Wins     int            `json:"wins"`
 	Losses   int            `json:"losses"`
-	Rating   float64        `json:"rating"`
+	Rating   int            `json:"rating"`
 }
 
 // Ladder represents a single ladder
