@@ -202,9 +202,8 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) (*Game, error) {
 
 		winner.Wins = winner.Wins + 1
 		loser.Losses = loser.Losses + 1
-
-		winner.Rating = wa
-		loser.Rating = la
+		winner.Rating = winner.Rating + wa
+		loser.Rating = loser.Rating + la
 
 		// swap positions if the winner was positioned lower (greater number) than the loser
 		if winner.Position > loser.Position {

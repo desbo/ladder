@@ -63,3 +63,8 @@ export const selectOpponent = (opponent: LadderPlayer): AnyAction => ({
   type: Actions.SELECT_OPPONENT,
   opponent: opponent
 })
+
+export const clearOpponent = (): AnyAction => ({
+  type: Actions.SELECT_OPPONENT,
+  opponent: undefined
+})

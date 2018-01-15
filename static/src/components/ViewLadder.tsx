@@ -3,7 +3,7 @@ import * as React from 'react';
 import { RouteProps, match, Redirect } from 'react-router';
 import { ReactNode } from 'react';
 
-import { Actions, setCurrentLadder, selectOpponent } from 'actions/actions';
+import { Actions, setCurrentLadder, selectOpponent, clearOpponent } from 'actions/actions';
 
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
@@ -23,7 +23,8 @@ const mapStateToProps = (state: AppState) => ({
 
 const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
   setLadder: (ladder: Ladder) => dispatch(setCurrentLadder(ladder)),
-  selectOpponent: (opponent: LadderPlayer) => dispatch(selectOpponent(opponent))
+  selectOpponent: (opponent: LadderPlayer) => dispatch(selectOpponent(opponent)),
+  clearOpponent: () => dispatch(clearOpponent())
 })
 
 type Props = {
@@ -32,6 +33,7 @@ type Props = {
   user: UserState,
   setLadder: (ladder: Ladder) => any,
   selectOpponent: (opponent: LadderPlayer) => any,
+  clearOpponent: () => any,
   match: match<{ id: string }>
 };
 
@@ -98,7 +100,7 @@ class ViewLadder extends React.Component<Props, State> {
                       user={this.props.user} 
                       ladder={this.props.ladder} 
                       opponent={this.props.opponent}
-                      onSubmit={this.fetch.bind(this)} />
+                      onSubmit={() => this.fetch().then(this.props.clearOpponent)} />
                   </div>
                 }
 

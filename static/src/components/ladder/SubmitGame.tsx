@@ -26,7 +26,7 @@ type ScoreInputProps = {
 
 const PlayerScoreInput = ({ name, placeholder, value, onChange, ...props}: ScoreInputProps) => 
   <div className="column is-5 level-item">
-    <h2 className="subtitle is-4 has-text-centered">
+    <h2 className="subtitle is-5 has-text-centered">
       {name}
     </h2>
     <input 
@@ -70,20 +70,29 @@ export default class SubmitGame extends React.Component<Props, State> {
       this.props.opponent, 
       parseInt(this.state.scores.user), 
       parseInt(this.state.scores.opponent)
-    ).then((game: Game) => this.props.onSubmit(game))
+    ).then((game: Game) => {
+      this.setState({
+        scores: {
+          user: "",
+          opponent: "" 
+        }
+      });
+
+      this.props.onSubmit(game);
+    })
   }
 
   render() {
     return(
       <form className="box" onSubmit={e => e.preventDefault()}>
-        <div className="columns is-mobile">
+        <div className="columns level is-mobile">
           <PlayerScoreInput 
             value={this.state.scores.user || ""}
             name={this.props.user.username}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.setScore('user', e.target.value)}
             placeholder="your score" />
 
-          <div className="column is-2">
+          <div className="column level-item is-2">
             <h2 className="title is-5 has-text-centered">
               vs
             </h2>
