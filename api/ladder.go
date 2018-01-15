@@ -172,22 +172,39 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) (*Game, error) {
 		return nil, fmt.Errorf("could not locate game loser %s", loserP.DatastoreKey(ctx))
 	}
 
-	wr, lr := rank(ctx, g)
-
+	// 1. rank the winner and loser and write the updated Players to the DB
+	// 2. set the rating change in this Game for both Players
+	// 3. save the Game
+	// 4. update the ladder statistics for both LadderPlayers and write the
+	//    updated ladder to the DB
 	err := datastore.RunInTransaction(ctx, func(ctx context.Context) error {
-		if err := g.Save(ctx, l); err != nil {
+		wa, la := rank(ctx, &winnerP, &loserP)
+
+		if _, err := winnerP.Save(ctx); err != nil {
 			return err
 		}
 
-		if err := g.SavePlayers(ctx); err != nil {
+		if _, err := loserP.Save(ctx); err != nil {
+			return err
+		}
+
+		if err := g.SetRatingChange(winnerP, wa); err != nil {
+			return err
+		}
+
+		if err := g.SetRatingChange(loserP, la); err != nil {
+			return err
+		}
+
+		if err := g.Save(ctx, l); err != nil {
 			return err
 		}
 
 		winner.Wins = winner.Wins + 1
 		loser.Losses = loser.Losses + 1
 
-		winner.Rating = wr
-		loser.Rating = lr
+		winner.Rating = wa
+		loser.Rating = la
 
 		// swap positions if the winner was positioned lower (greater number) than the loser
 		if winner.Position > loser.Position {

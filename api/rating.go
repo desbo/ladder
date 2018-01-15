@@ -46,25 +46,20 @@ func newOpponent(p Player, outcome result) Opponent {
 }
 
 // Rank updates the ranking, deviation and volatility for the Players in a Game
-// and returns the new rankings (winner and loser respectively).
+// and returns the ranking adjustments (winner and loser respectively).
 //
 // TODO: this works on a per-game basis. The glicko2 doc says it works best with a
 // longer rating period of 10-15 games, so maybe this function should take a single
 // Player, look up their previous ~10 games and calculate the rating based on that.
-func rank(ctx context.Context, g *Game) (int, int) {
-	winner, loser := g.WinnerAndLoser()
-
+func rank(ctx context.Context, winner *Player, loser *Player) (int, int) {
 	// winnerOpponent is the loser (the opponent of the winner)
-	winnerOpponent := []glicko2.Opponent{newOpponent(loser, win)}
-	loserOpponent := []glicko2.Opponent{newOpponent(winner, loss)}
+	winnerOpponent := []glicko2.Opponent{newOpponent(*loser, win)}
+	loserOpponent := []glicko2.Opponent{newOpponent(*winner, loss)}
 
-	wc := rankPlayer(&winner, winnerOpponent)
-	lc := rankPlayer(&loser, loserOpponent)
+	wa := rankPlayer(winner, winnerOpponent)
+	la := rankPlayer(loser, loserOpponent)
 
-	g.SetRatingChange(winner, wc)
-	g.SetRatingChange(loser, lc)
-
-	return winner.Rating, loser.Rating
+	return wa, la
 }
 
 // rankPlayer updates this Player's rank and returns the difference

@@ -120,6 +120,7 @@ func SubmitGameTest(ctx context.Context, t *testing.T) {
 	winner := players[1]
 	loser := players[0]
 	game := NewGame(winner, loser, 11, 5)
+
 	_, err = l.LogGame(ctx, game)
 
 	if err != nil {
@@ -146,5 +147,23 @@ func SubmitGameTest(ctx context.Context, t *testing.T) {
 
 	if len(l.Players) != LadderSize {
 		t.Fatalf("wrong number of players in ladder after game: got %d, expected %d", len(l.Players), LadderSize)
+	}
+
+	winner, err = GetPlayerByEncodedKey(ctx, winner.DatastoreKey(ctx).Encode())
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Player ratings in a game should be what they were at the start of the game
+	// (before rating calculation based on the Game's result)
+	if game.Player1.Player.Rating != 1000 {
+		t.Fatalf("Player rating in game was incorrectly updated")
+	}
+
+	newRating := game.Player1.Player.Rating + game.Player1.RatingChange
+
+	if winner.Rating != newRating {
+		t.Fatalf("Player's rating was not updated: expected %d, got %d", newRating, winner.Rating)
 	}
 }

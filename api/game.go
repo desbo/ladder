@@ -32,7 +32,7 @@ func newPlayerResult(p *Player, score int) playerResult {
 	}
 }
 
-// WinnerAndLoser returns the player Keys for the winner and loser of this match, respectively
+// WinnerAndLoser returns the winner and loser of this match, respectively
 func (g *Game) WinnerAndLoser() (Player, Player) {
 	if g.Player1.Score > g.Player2.Score {
 		return g.Player1.Player, g.Player2.Player
@@ -46,19 +46,6 @@ func (g *Game) Save(ctx context.Context, ladder *Ladder) error {
 
 	if _, err := datastore.Put(ctx, key, g); err != nil {
 		return fmt.Errorf("error saving game %s: %s", g.ID, err)
-	}
-
-	return nil
-}
-
-// SavePlayers saves both players in this game to the DB
-func (g *Game) SavePlayers(ctx context.Context) error {
-	winner, loser := g.WinnerAndLoser()
-
-	if _, err := winner.Save(ctx); err != nil {
-		return fmt.Errorf("error saving game winner (id %s): %s", winner.FirebaseID, err.Error())
-	} else if _, err := loser.Save(ctx); err != nil {
-		return fmt.Errorf("error saving game loser (id %s): %s", loser.FirebaseID, err.Error())
 	}
 
 	return nil
