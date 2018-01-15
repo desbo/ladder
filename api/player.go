@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"net/http"
 
 	"firebase.google.com/go/auth"
@@ -15,7 +14,7 @@ import (
 type Player struct {
 	FirebaseID       string  `json:"-"`
 	Name             string  `json:"name"`
-	Rating           float64 `json:"rating"`
+	Rating           float64 `json:"rating,int"`
 	RatingDeviation  float64 `json:"-"`
 	RatingVolatility float64 `json:"-"`
 }
@@ -96,21 +95,7 @@ func (p *Player) Equals(o Player) bool {
 func (p *Player) Save(ctx context.Context) (*datastore.Key, error) {
 	key := p.DatastoreKey(ctx)
 
-	err := datastore.RunInTransaction(ctx, func(ctx context.Context) error {
-		err := datastore.Get(ctx, key, p)
-
-		if err == nil {
-			return fmt.Errorf("player %s already exists", p.FirebaseID)
-		} else if err != datastore.ErrNoSuchEntity {
-			return err
-		}
-
-		_, err = datastore.Put(ctx, key, p)
-
-		return err
-	}, nil)
-
-	if err != nil {
+	if _, err := datastore.Put(ctx, key, p); err != nil {
 		return nil, err
 	}
 

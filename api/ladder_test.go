@@ -10,7 +10,7 @@ import (
 )
 
 const LadderKey string = "test"
-const LadderSize = 20
+const LadderSize = 2
 
 // TestLadders represents an end-to-end test of:
 // - creating a ladder

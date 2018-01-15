@@ -1,10 +1,12 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"github.com/rs/xid"
+	"google.golang.org/appengine/datastore"
 )
 
 type playerResult struct {
@@ -34,6 +36,29 @@ func (g *Game) WinnerAndLoser() (Player, Player) {
 	}
 
 	return g.Player2.Player, g.Player1.Player
+}
+
+func (g *Game) Save(ctx context.Context, ladder *Ladder) error {
+	key := datastore.NewKey(ctx, GameKind, g.ID, 0, ladder.DatastoreKey(ctx))
+
+	if _, err := datastore.Put(ctx, key, g); err != nil {
+		return fmt.Errorf("error saving game %s: %s", g.ID, err)
+	}
+
+	return nil
+}
+
+// SavePlayers saves both players in this game to the DB
+func (g *Game) SavePlayers(ctx context.Context) error {
+	winner, loser := g.WinnerAndLoser()
+
+	if _, err := winner.Save(ctx); err != nil {
+		return fmt.Errorf("error saving game winner (id %s): %s", winner.FirebaseID, err.Error())
+	} else if _, err := loser.Save(ctx); err != nil {
+		return fmt.Errorf("error saving game loser (id %s): %s", loser.FirebaseID, err.Error())
+	}
+
+	return nil
 }
 
 func (g *Game) SetRatingChange(p Player, change float64) error {
