@@ -247,6 +247,25 @@ func (l *Ladder) DatastoreKey(ctx context.Context) *datastore.Key {
 	return datastore.NewKey(ctx, LadderKind, l.ID, 0, nil)
 }
 
+func (l *Ladder) Valid(ctx context.Context) bool {
+	if l.Name == "" {
+		log.Errorf(ctx, "ladder %s had no Name", l)
+		return false
+	}
+
+	if l.ID == "" {
+		log.Errorf(ctx, "ladder %s had no ID", l)
+		return false
+	}
+
+	if l.OwnerKey == nil {
+		log.Errorf(ctx, "ladder %s had no OwnerKey", l)
+		return false
+	}
+
+	return true
+}
+
 // Save the ladder to the DB.
 // Players are always sorted by their position before saving.
 func (l *Ladder) Save(ctx context.Context) (*datastore.Key, error) {
@@ -256,5 +275,10 @@ func (l *Ladder) Save(ctx context.Context) (*datastore.Key, error) {
 
 	key := l.DatastoreKey(ctx)
 	l.sortPlayers()
+
+	if !l.Valid(ctx) {
+		return nil, fmt.Errorf("Invalid Ladder %s", l)
+	}
+
 	return datastore.Put(ctx, key, l)
 }
