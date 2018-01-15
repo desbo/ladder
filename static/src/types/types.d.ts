@@ -2,6 +2,7 @@
 declare const API_URL: string;
 
 type LadderPlayer = {
+  key: string,
   position: number,
   name: string,
   wins: number,
@@ -14,6 +15,23 @@ type Ladder = {
   id: string,
   created: string,
   players: Array<LadderPlayer>
+}
+
+type Player = {
+  name: string,
+  rating: number
+}
+
+type PlayerResult = {
+  player: Player,
+  score: number
+}
+
+type Game = {
+  id: string,
+  date: string,
+  player1: PlayerResult,
+  player2: PlayerResult
 }
 
 /**
@@ -46,7 +64,9 @@ type ViewState = {
 
 type LadderState = {
   owned: Array<Ladder>,
-  playing: Array<Ladder>
+  playing: Array<Ladder>,
+  current: Ladder,
+  opponent: LadderPlayer,
 }
 
 type ModalMessageLevel = 'info' | 'error';

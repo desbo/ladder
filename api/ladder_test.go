@@ -9,7 +9,8 @@ import (
 	"google.golang.org/appengine/datastore"
 )
 
-var OpaqueLadderKey string // used to retrieve ladder after creation
+const LadderKey string = "test"
+const LadderSize = 2
 
 // TestLadders represents an end-to-end test of:
 // - creating a ladder
@@ -28,18 +29,17 @@ func TestLadders(t *testing.T) {
 	defer done()
 
 	t.Run("Create ladder", func(t *testing.T) { CreateLadderTest(ctx, t) })
-	t.Run("Add players", func(t *testing.T) { AddPlayersTest(ctx, 20, t) })
+	t.Run("Add players", func(t *testing.T) { AddPlayersTest(ctx, LadderSize, t) })
 	t.Run("Submit game", func(t *testing.T) { SubmitGameTest(ctx, t) })
 }
 
 func CreateLadderTest(ctx context.Context, t *testing.T) {
 	l := NewLadder()
-	l.ID = "test"
+	l.ID = LadderKey
 	l.Name = "test ladder"
 	l.Save(ctx)
 
 	key := datastore.NewKey(ctx, LadderKind, l.ID, 0, nil)
-	OpaqueLadderKey = key.Encode()
 	result := NewLadder()
 
 	err := datastore.Get(ctx, key, result)
@@ -54,10 +54,10 @@ func CreateLadderTest(ctx context.Context, t *testing.T) {
 }
 
 func AddPlayersTest(ctx context.Context, ladderSize int, t *testing.T) {
-	l, err := GetLadder(ctx, OpaqueLadderKey)
+	l, err := GetLadder(ctx, LadderKey)
 
 	if err != nil {
-		t.Fatalf("could not get ladder with ID %s: %s", OpaqueLadderKey, err.Error())
+		t.Fatalf("could not get ladder with ID %s: %s", LadderKey, err.Error())
 	}
 
 	for i := 0; i < ladderSize; i++ {
@@ -100,10 +100,10 @@ func AddPlayersTest(ctx context.Context, ladderSize int, t *testing.T) {
 }
 
 func SubmitGameTest(ctx context.Context, t *testing.T) {
-	l, err := GetLadder(ctx, OpaqueLadderKey)
+	l, err := GetLadder(ctx, LadderKey)
 
 	if err != nil {
-		t.Fatalf("could not get ladder with ID %s: %s", OpaqueLadderKey, err.Error())
+		t.Fatalf("could not get ladder with ID %s: %s", LadderKey, err.Error())
 	}
 
 	players := make([]*Player, len(l.Players))
@@ -119,8 +119,9 @@ func SubmitGameTest(ctx context.Context, t *testing.T) {
 	// match should result in a swap
 	winner := players[1]
 	loser := players[0]
-	game := NewGame(ctx, winner, loser, 11, 5)
-	err = l.LogGame(ctx, game)
+	game := NewGame(winner, loser, 11, 5)
+
+	_, err = l.LogGame(ctx, game)
 
 	if err != nil {
 		t.Fatalf("error logging game: %s", err.Error())
@@ -144,4 +145,25 @@ func SubmitGameTest(ctx context.Context, t *testing.T) {
 		t.Fatalf("position of loser set incorrectly")
 	}
 
+	if len(l.Players) != LadderSize {
+		t.Fatalf("wrong number of players in ladder after game: got %d, expected %d", len(l.Players), LadderSize)
+	}
+
+	winner, err = GetPlayerByEncodedKey(ctx, winner.DatastoreKey(ctx).Encode())
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Player ratings in a game should be what they were at the start of the game
+	// (before rating calculation based on the Game's result)
+	if game.Player1.Player.Rating != 1000 {
+		t.Fatalf("Player rating in game was incorrectly updated")
+	}
+
+	newRating := game.Player1.Player.Rating + game.Player1.RatingChange
+
+	if winner.Rating != newRating {
+		t.Fatalf("Player's rating was not updated: expected %d, got %d", newRating, winner.Rating)
+	}
 }

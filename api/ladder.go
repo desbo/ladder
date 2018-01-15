@@ -22,7 +22,7 @@ type LadderPlayer struct {
 	Position int            `json:"position"`
 	Wins     int            `json:"wins"`
 	Losses   int            `json:"losses"`
-	Rating   float64        `json:"rating"`
+	Rating   int            `json:"rating"`
 }
 
 // Ladder represents a single ladder
@@ -51,17 +51,11 @@ func NewLadder() *Ladder {
 
 const initialRating = 1000
 
-// GetLadder gets a ladder from an encoded Datastore key
-func GetLadder(ctx context.Context, encodedKey string) (*Ladder, error) {
-	l := &Ladder{}
-
-	key, err := datastore.DecodeKey(encodedKey)
-
-	if err != nil {
-		return nil, err
-	}
-
-	err = datastore.Get(ctx, key, l)
+// GetLadder gets a ladder by ID
+func GetLadder(ctx context.Context, id string) (*Ladder, error) {
+	l := &Ladder{ID: id}
+	key := l.DatastoreKey(ctx)
+	err := datastore.Get(ctx, key, l)
 
 	if err != nil {
 		return nil, err
@@ -156,74 +150,78 @@ func (l *Ladder) AddPlayer(ctx context.Context, p *Player) error {
 // - updates boh Player's wins/losses in this ladder
 // - if the winner was previously ranked below the loser, swaps the player positions
 // - writes the ladder to the DB with the new results
-func (l *Ladder) LogGame(ctx context.Context, g *Game) error {
-
-	var winner, loser LadderPlayer
+func (l *Ladder) LogGame(ctx context.Context, g *Game) (*Game, error) {
+	var winner, loser *LadderPlayer // winner and loser indexes
 	winnerP, loserP := g.WinnerAndLoser()
 
-	// retrieve winner and loser from LadderPlayers
-	// remove them both now, to be added back after they're updated
 	for i := 0; i < len(l.Players); i++ {
 		p := l.Players[i]
-		remove := false
 
 		if p.Key.Equal(winnerP.DatastoreKey(ctx)) {
-			winner = p
-			remove = true
+			winner = &l.Players[i]
 		} else if p.Key.Equal(loserP.DatastoreKey(ctx)) {
-			loser = p
-			remove = true
-		}
-
-		if remove {
-			err := l.removeNthPlayer(i)
-
-			if err != nil {
-				return err
-			}
+			loser = &l.Players[i]
 		}
 	}
 
-	wr, lr, err := rank(ctx, g)
+	if winner == nil {
+		return nil, fmt.Errorf("could not locate game winner %s", winnerP.DatastoreKey(ctx))
+	}
+
+	if loser == nil {
+		return nil, fmt.Errorf("could not locate game loser %s", loserP.DatastoreKey(ctx))
+	}
+
+	// 1. rank the winner and loser and write the updated Players to the DB
+	// 2. set the rating change in this Game for both Players
+	// 3. save the Game
+	// 4. update the ladder statistics for both LadderPlayers and write the
+	//    updated ladder to the DB
+	err := datastore.RunInTransaction(ctx, func(ctx context.Context) error {
+		wa, la := rank(ctx, &winnerP, &loserP)
+
+		if _, err := winnerP.Save(ctx); err != nil {
+			return err
+		}
+
+		if _, err := loserP.Save(ctx); err != nil {
+			return err
+		}
+
+		if err := g.SetRatingChange(winnerP, wa); err != nil {
+			return err
+		}
+
+		if err := g.SetRatingChange(loserP, la); err != nil {
+			return err
+		}
+
+		if err := g.Save(ctx, l); err != nil {
+			return err
+		}
+
+		winner.Wins = winner.Wins + 1
+		loser.Losses = loser.Losses + 1
+		winner.Rating = winner.Rating + wa
+		loser.Rating = loser.Rating + la
+
+		// swap positions if the winner was positioned lower (greater number) than the loser
+		if winner.Position > loser.Position {
+			winner.Position, loser.Position = loser.Position, winner.Position
+		}
+
+		if _, err := l.Save(ctx); err != nil {
+			return err
+		}
+
+		return nil
+	}, &datastore.TransactionOptions{XG: true})
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	key := datastore.NewKey(ctx, GameKind, g.ID, 0, l.DatastoreKey(ctx))
-
-	if _, err = datastore.Put(ctx, key, g); err != nil {
-		return err
-	}
-
-	winner.Wins = winner.Wins + 1
-	winner.Rating = wr
-	loser.Losses = loser.Losses + 1
-	loser.Rating = lr
-
-	// swap positions if the winner was ranked lower (greater number) than the loser
-	if winner.Position > loser.Position {
-		winner.Position, loser.Position = loser.Position, winner.Position
-	}
-
-	l.Players = append(l.Players, winner, loser)
-	_, err = l.Save(ctx)
-
-	return err
-}
-
-func (l *Ladder) removeNthPlayer(n int) error {
-	ps := l.Players
-
-	if n >= len(ps) {
-		return fmt.Errorf("index out of bounds when removing player: index %d, len(players) %d", n, len(ps))
-	}
-
-	// see https://stackoverflow.com/questions/37334119/how-to-delete-an-element-from-array-in-golang/37335777
-	ps[len(ps)-1], ps[n] = ps[n], ps[len(ps)-1]
-	l.Players = ps[:len(ps)-1]
-
-	return nil
+	return g, nil
 }
 
 func (l *Ladder) sortPlayers() {

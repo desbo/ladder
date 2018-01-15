@@ -1,24 +1,70 @@
 import * as React from 'react';
 
-import InputField from 'components/form/InputField';
+import { connect, Dispatch } from 'react-redux';
 import { ReactInstance, Ref, ChangeEvent } from 'react';
 
-export default class Login extends React.Component {
+import { Actions , setLoginMode, showErrorModal, showInfoModal } from 'actions/actions';
+import { firebase } from 'auth';
+import { User } from 'firebase';
+
+import InputField from 'components/form/InputField';
+
+const mapStateToProps = (state: AppState) => ({
+  user: state.user,
+  mode: state.view.loginMode
+});
+
+const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
+  setLoginMode: (mode: LoginMode) => 
+    dispatch(setLoginMode(mode)),
+
+  signIn: (email: string, password: string): Promise<any> => 
+    firebase.signIn(email, password),
+
+  register: (username: string, email: string, password: string): Promise<any> =>
+    firebase.register(username, email, password)
+      .then((user: User) => dispatch({
+        type: Actions.SIGN_IN,
+        username: user.displayName
+      })),
+
+  userFormInput: (field: string, value: string) => dispatch({
+    type: Actions.USER_FORM_INPUT,
+    field,
+    value
+  }),
+
+  showErrorModal: (error: string) => dispatch(showErrorModal(error))
+});
+
+type Props = { 
+  user: UserState,
+  mode: LoginMode,
+  setLoginMode: (mode: LoginMode) => any,
+  signIn: (email: string, password: string) => Promise<any>,
+  register: (username: string, email: string, password: string) => Promise<any>,
+  userFormInput: (field: string, value: string) => any,
+  showErrorModal: (error: string) => any,
+  fullWidth?: boolean,
+  registerOnly?: boolean,
+  onRegister?: () => any,
+}
+
+class Login extends React.Component<Props> {
   nameInput: null | HTMLInputElement
   emailInput: null | HTMLInputElement
   passwordInput: null | HTMLInputElement
 
-  props: { 
-    input: LoginFormInput,
-    mode: LoginMode,
-    selectLogin: () => void,
-    selectRegister: () => void,
-    register: (username: string, email: string, password: string) => Promise<any>,
-    signIn: (email: string, password: string) => Promise<any>,
-    inputName: (username: string) => void,
-    inputEmail: (email: string) => void,
-    inputPassword: (password: string) => void,
-    onError: (message: string) => void
+  public static defaultProps: Partial<Props> = {
+    fullWidth: false,
+    registerOnly: false,
+    onRegister: () => null
+  }
+
+  componentDidMount() {
+    if (this.props.registerOnly) {
+      this.props.setLoginMode('register');
+    }
   }
 
   validate(f: Function) {
@@ -31,44 +77,57 @@ export default class Login extends React.Component {
   }
 
   onError(e: AppError) {
-    return this.props.onError(e.message);
+    return this.props.showErrorModal(e.message);
+  }
+
+  inputEmail(email: string) {
+    return this.props.userFormInput('email', email);
+  }
+
+  inputUsername(username: string) {
+    return this.props.userFormInput('username', username);
+  }
+
+  inputPassword(password: string) {
+    return this.props.userFormInput('password', password);
   }
 
   render() {
-    const userInput = this.props.input;
+    const userInput = this.props.user.formInput;
 
     return (
       <div className="columns is-centered">
-        <div className="column is-centered is-one-third">
-          <div className="tabs is-centered is-boxed">
-            <ul>
-              <li className={this.props.mode === 'login' ? 'is-active' : ''}>
-                <a onClick={this.props.selectLogin}>login</a>
-              </li>
+        <div className={`column is-centered ${this.props.fullWidth ? '' : 'is-one-third'}`}>
+          {!this.props.registerOnly && 
+            <div className="tabs is-centered is-boxed">
+              <ul>
+                <li className={this.props.mode === 'login' ? 'is-active' : ''}>
+                  <a onClick={() => this.props.setLoginMode('login')}>login</a>
+                </li>
 
-              <li className={this.props.mode === 'register' ? 'is-active' : ''}>
-                <a onClick={this.props.selectRegister}>register</a>
-              </li>
-            </ul>
-          </div>
-
+                <li className={this.props.mode === 'register' ? 'is-active' : ''}>
+                  <a onClick={() => this.props.setLoginMode('register')}>register</a>
+                </li>
+              </ul>
+            </div>
+          }
 
           <form onSubmit={e => e.preventDefault()}>
             {this.props.mode === 'register' && 
-              <InputField label="player name" type="text" required 
+              <InputField label="name" type="text" required 
                 value={userInput.username || ''}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.props.inputName(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.inputUsername(e.target.value)}
                 inputRef={(e: HTMLInputElement) => this.nameInput = e} />
             }
 
             <InputField label="email" type="email" required 
               value={userInput.email || ''}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.props.inputEmail(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.inputEmail(e.target.value)}
               inputRef={(e: HTMLInputElement) => this.emailInput = e} />
 
             <InputField label="password" type="password" required
               value={userInput.password || ''}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.props.inputPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => this.inputPassword(e.target.value)}
               inputRef={(e: HTMLInputElement) => this.passwordInput = e} />
 
             <div className="buttons is-centered">
@@ -84,6 +143,7 @@ export default class Login extends React.Component {
                 <button className="button is-primary is-medium" 
                   onClick={() => this.validate(() => {
                     this.props.register(userInput.username, userInput.email, userInput.password)
+                      .then(this.props.onRegister)
                       .catch(this.onError.bind(this))
                   })}>register</button>
               }
@@ -94,3 +154,8 @@ export default class Login extends React.Component {
     )
   }
 }
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Login)

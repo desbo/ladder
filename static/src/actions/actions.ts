@@ -1,5 +1,6 @@
 import { error } from "util";
 import { Action, AnyAction } from "redux";
+import Ladders from "components/Ladders";
 
 export enum Actions {
   SET_LOGIN_MODE = 'SET_LOGIN_MODE',
@@ -8,6 +9,9 @@ export enum Actions {
   USER_FORM_INPUT = 'USER_FORM_INPUT',
 
   SET_PLAYER_LADDERS = 'SET_PLAYER_LADDERS',
+  SET_CURRENT_LADDER = 'SET_CURRENT_LADDER',
+
+  SELECT_OPPONENT = 'SELECT_OPPONENT',
 
   SHOW_MODAL = 'SHOW_MODAL',
   HIDE_MODAL = 'HIDE_MODAL'
@@ -34,6 +38,13 @@ export function setPlayerLadders(ladders: LadderState) {
   }
 }
 
+export function setCurrentLadder(ladder: Ladder) {
+  return {
+    type: Actions.SET_CURRENT_LADDER,
+    ladder: ladder
+  }
+}
+
 function showModal(message: string, level: ModalMessageLevel): AnyAction {
   return {
     type: Actions.SHOW_MODAL,
@@ -47,3 +58,13 @@ export const showErrorModal = (errorMessage: string): AnyAction =>
 
 export const showInfoModal = (message: string): AnyAction => 
   showModal(message, 'info')
+
+export const selectOpponent = (opponent: LadderPlayer): AnyAction => ({
+  type: Actions.SELECT_OPPONENT,
+  opponent: opponent
+})
+
+export const clearOpponent = (): AnyAction => ({
+  type: Actions.SELECT_OPPONENT,
+  opponent: undefined
+})

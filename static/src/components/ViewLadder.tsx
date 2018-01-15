@@ -1,62 +1,131 @@
 import * as React from 'react';
 
-import { Actions } from 'actions/actions';
+import { RouteProps, match, Redirect } from 'react-router';
+import { ReactNode } from 'react';
+
+import { Actions, setCurrentLadder, selectOpponent, clearOpponent } from 'actions/actions';
 
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
+import Table from 'components/ladder/Table'
+import SubmitGame from 'components/ladder/SubmitGame'
+import PlayerDropdown from 'components/ladder/PlayerDropdown'
+import Login from 'components/Login';
+
 import API from 'api';
-import { RouteProps, match } from 'react-router';
 
 const mapStateToProps = (state: AppState) => ({
-  ladders: state.ladders.owned.concat(state.ladders.playing)
+  ladder: state.ladders.current,
+  opponent: state.ladders.opponent,
+  user: state.user
 })
 
-const ViewLadder = ({ 
-  match, 
-  ladders,
-}: { 
-  match: match<{ id: string }>,
-  ladders: Array<Ladder>
-}) => {
-  const ladder: Ladder | undefined = ladders.find(l => l.id === match.params.id);
+const mapDispatchToProps = (dispatch: Dispatch<any>) => ({
+  setLadder: (ladder: Ladder) => dispatch(setCurrentLadder(ladder)),
+  selectOpponent: (opponent: LadderPlayer) => dispatch(selectOpponent(opponent)),
+  clearOpponent: () => dispatch(clearOpponent())
+})
 
-  if (ladder) return (
-    <div className="columns">
-      <div className="column is-6">
-        <h1 className="title">{ladder.name}</h1>
-        <table className="table is-striped is-hoverable is-fullwidth">
-          <thead>
-            <tr>
-              <th><abbr title="position"></abbr></th>
-              <th>Name</th>
-              <th>Played</th>
-              <th>Won</th>
-              <th>Lost</th>
-              <th>Rating</th>
-            </tr>
-          </thead>
+type Props = {
+  ladder: Ladder,
+  opponent: LadderPlayer,
+  user: UserState,
+  setLadder: (ladder: Ladder) => any,
+  selectOpponent: (opponent: LadderPlayer) => any,
+  clearOpponent: () => any,
+  match: match<{ id: string }>
+};
 
-          <tbody>
-            {ladder.players.map(p => <tr key={p.name}>
-              <td>{p.position}</td>
-              <td>{p.name}</td>
-              <td>{p.wins + p.losses}</td>
-              <td>{p.wins}</td>
-              <td>{p.losses}</td>
-              <td>{p.rating}</td>
-            </tr>)}
-          </tbody>
-        </table>
-      </div>
+type State = {
+  failed: boolean
+}
 
-      <div className="column is-4 is-offset-2">
-        <h2 className="title is-4">signup link</h2>
-      </div>
-    </div>
-  );
+class ViewLadder extends React.Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      failed: false
+    };
+  }
+
+  componentDidMount() {
+    this.fetch()
+  }
+
+  fetch() {
+    return API.getLadder(this.props.match.params.id)
+      .then(ladder => this.props.setLadder(ladder))
+      .catch(() => this.setState({ failed: true }))
+  }
+
+  join() {
+    return API.joinLadder(this.props.ladder.id)
+      .then(this.fetch.bind(this))
+  }
+
+  render() {
+    if (this.props.ladder) {
+      return (
+        <div>
+          <section className="hero is-light is-small">
+            <div className="hero-body">
+              <div className="container">
+                <h1 className="subtitle is-4">{this.props.ladder.name}</h1>
+              </div>
+            </div>
+          </section>
+
+          <section className="section">
+            <div className="container">
+              <div className="columns">
+                <div className="column is-6">
+                  <Table ladder={this.props.ladder} />
+                </div>
+
+                {this.props.user.signedIn && 
+                  <div className="column is-offset-1 is-5">
+                    <div style={{"marginBottom": "-8px"}} className="columns level is-mobile">
+                      <div className="column is-6">
+                        <h2 className="subtitle is-4 level-item level-left">submit game</h2>
+                      </div>
+                      <div className="column is-6">
+                        <PlayerDropdown 
+                          players={this.props.ladder.players.filter(p => p.name !== this.props.user.username )}
+                          onSelect={this.props.selectOpponent} />
+                      </div>
+                    </div>
+                    
+                    <SubmitGame 
+                      user={this.props.user} 
+                      ladder={this.props.ladder} 
+                      opponent={this.props.opponent}
+                      onSubmit={() => this.fetch().then(this.props.clearOpponent)} />
+                  </div>
+                }
+
+                {!this.props.user.signedIn && 
+                  <div className="column is-offset-1 is-5">
+                    <h2 className="subtitle is-4">join this ladder</h2>
+                    <Login fullWidth={true} registerOnly={true}
+                          onRegister={this.join.bind(this)} />
+                  </div>
+                }
+
+              </div>
+            </div>
+          </section>
+        </div>
+      );
+    } else if (this.state.failed) {
+      return <Redirect to="/" />
+    } else {
+      return <div>getting ladder...</div>
+    }
+  }
 }
 
 export default connect(
-  mapStateToProps
+  mapStateToProps,
+  mapDispatchToProps
 )(ViewLadder)
