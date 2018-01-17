@@ -52,6 +52,6 @@ module.exports = {
 
     prod ? new UglifyJsPlugin({
       parallel: true
-    }) : null
+    }) : () => null 
   ]
 };
