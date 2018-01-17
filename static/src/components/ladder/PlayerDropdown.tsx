@@ -19,7 +19,7 @@ class PlayerDropdown extends React.Component<Props, State> {
 
   componentDidUpdate() {
     if (this.state.active) {
-      const listener = document.addEventListener('click', () => {
+      document.addEventListener('click', () => {
         this.setState({ active: false });
       }, { once: true });
     }
