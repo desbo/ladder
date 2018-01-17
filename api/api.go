@@ -68,7 +68,10 @@ func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	ladder.SetOwner(ctx, token.UID)
+	if err := ladder.SetOwner(ctx, token.UID); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	save(ladder, w, r)
 }
