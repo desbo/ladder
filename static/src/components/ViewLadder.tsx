@@ -78,11 +78,7 @@ class ViewLadder extends React.Component<Props, State> {
 
           <section className="section">
             <div className="container">
-              <div className="columns">
-                <div className="column is-6">
-                  <Table ladder={this.props.ladder} />
-                </div>
-
+              <div className="columns reverse-row-order">
                 {this.props.user.signedIn && 
                   <div className="column is-offset-1 is-5">
                     <div style={{"marginBottom": "-8px"}} className="columns level is-mobile">
@@ -112,6 +108,9 @@ class ViewLadder extends React.Component<Props, State> {
                   </div>
                 }
 
+                <div className="column is-6">
+                  <Table ladder={this.props.ladder} />
+                </div>
               </div>
             </div>
           </section>
