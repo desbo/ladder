@@ -17,6 +17,14 @@ class PlayerDropdown extends React.Component<Props, State> {
     }
   }
 
+  componentDidUpdate() {
+    if (this.state.active) {
+      const listener = document.addEventListener('click', () => {
+        this.setState({ active: false });
+      }, { once: true });
+    }
+  }
+
   select(player: LadderPlayer) {
     this.props.onSelect(player);
     this.setState({
