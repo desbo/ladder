@@ -41,12 +41,19 @@ type PlayerLadders struct {
 }
 
 // NewLadder creates a new ladder
-func NewLadder() *Ladder {
-	return &Ladder{
-		Created: time.Now(),
-		ID:      xid.New().String(),
-		Players: make([]LadderPlayer, 0),
+func NewLadder(ctx context.Context, owner *Player) (*Ladder, error) {
+	l := &Ladder{
+		Created:  time.Now(),
+		ID:       xid.New().String(),
+		Players:  make([]LadderPlayer, 0),
+		OwnerKey: owner.DatastoreKey(ctx),
 	}
+
+	if err := l.AddPlayer(ctx, owner); err != nil {
+		return nil, err
+	}
+
+	return l, nil
 }
 
 const initialRating = 1000

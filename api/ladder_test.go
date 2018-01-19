@@ -34,17 +34,34 @@ func TestLadders(t *testing.T) {
 }
 
 func CreateLadderTest(ctx context.Context, t *testing.T) {
-	l := NewLadder()
+	owner := &Player{
+		FirebaseID:       "owner",
+		Name:             "owner",
+		Rating:           1000,
+		RatingDeviation:  350,
+		RatingVolatility: 0.06,
+	}
+
+	_, err := owner.Save(ctx)
+
+	if err != nil {
+		t.Fatalf("error saving ladder owner %v: %s", owner, err.Error())
+	}
+
+	l, err := NewLadder(ctx, owner)
+
+	if err != nil {
+		t.Fatalf("error creating ladder: %s", err.Error())
+	}
+
 	l.ID = LadderKey
 	l.Name = "test ladder"
 	l.Save(ctx)
 
 	key := datastore.NewKey(ctx, LadderKind, l.ID, 0, nil)
-	result := NewLadder()
+	result := &Ladder{}
 
-	err := datastore.Get(ctx, key, result)
-
-	if err != nil {
+	if err := datastore.Get(ctx, key, result); err != nil {
 		t.Fatal(err)
 	}
 
@@ -88,7 +105,8 @@ func AddPlayersTest(ctx context.Context, ladderSize int, t *testing.T) {
 		}
 	}
 
-	if len(l.Players) != ladderSize {
+	// +1 because we added owner at the start
+	if len(l.Players) != ladderSize+1 {
 		t.Fatalf("incorrect numbers of players in ladder: expected %d, got %d", ladderSize, len(l.Players))
 	}
 
@@ -97,6 +115,9 @@ func AddPlayersTest(ctx context.Context, ladderSize int, t *testing.T) {
 	if err != nil {
 		t.Fatalf("error saving ladder: %s", err.Error())
 	}
+}
+
+func GetLaddersTest(ctx context.Context, ladderSize int, t *testing.T) {
 }
 
 func SubmitGameTest(ctx context.Context, t *testing.T) {
@@ -145,7 +166,7 @@ func SubmitGameTest(ctx context.Context, t *testing.T) {
 		t.Fatalf("position of loser set incorrectly")
 	}
 
-	if len(l.Players) != LadderSize {
+	if len(l.Players) != LadderSize+1 {
 		t.Fatalf("wrong number of players in ladder after game: got %d, expected %d", len(l.Players), LadderSize)
 	}
 
