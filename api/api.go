@@ -9,6 +9,9 @@ import (
 	"github.com/rs/cors"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/log"
+
+	// enable remote API
+	_ "google.golang.org/appengine/remote_api"
 )
 
 type playerPostData struct {
