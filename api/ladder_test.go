@@ -12,6 +12,8 @@ import (
 const LadderKey string = "test"
 const LadderSize = 2
 
+var TestPlayer *Player
+
 // TestLadders represents an end-to-end test of:
 // - creating a ladder
 // - adding players
@@ -31,6 +33,7 @@ func TestLadders(t *testing.T) {
 	t.Run("Create ladder", func(t *testing.T) { CreateLadderTest(ctx, t) })
 	t.Run("Add players", func(t *testing.T) { AddPlayersTest(ctx, LadderSize, t) })
 	t.Run("Submit game", func(t *testing.T) { SubmitGameTest(ctx, t) })
+	t.Run("Get ladders for player", func(t *testing.T) { GetLaddersTest(ctx, t) })
 }
 
 func CreateLadderTest(ctx context.Context, t *testing.T) {
@@ -103,6 +106,10 @@ func AddPlayersTest(ctx context.Context, ladderSize int, t *testing.T) {
 		if !l.ContainsPlayer(ctx, player) {
 			t.Fatalf("ladder was not reported to contain player %v after adding", player)
 		}
+
+		if TestPlayer == nil {
+			TestPlayer = player
+		}
 	}
 
 	// +1 because we added owner at the start
@@ -117,7 +124,29 @@ func AddPlayersTest(ctx context.Context, ladderSize int, t *testing.T) {
 	}
 }
 
-func GetLaddersTest(ctx context.Context, ladderSize int, t *testing.T) {
+func GetLaddersTest(ctx context.Context, t *testing.T) {
+	owner, err := GetPlayer(ctx, "owner")
+
+	if err != nil {
+		t.Fatalf("could not load ladder owner")
+	}
+
+	ls, err := GetLaddersForPlayer(ctx, TestPlayer)
+
+	if err != nil {
+		t.Fatalf("error getting player ladders: %s", err.Error())
+	}
+
+	if len(ls.Playing) != 1 {
+		t.Fatalf("incorrect number of playing ladders for %s (expected %d, got %d)", TestPlayer, 1, len(ls.Playing))
+	}
+
+	ls, err = GetLaddersForPlayer(ctx, owner)
+
+	if len(ls.Owned) != 1 {
+		t.Fatalf("incorrect number of playing ladders for %s (expected %d, got %d)", owner, 1, len(ls.Owned))
+	}
+
 }
 
 func SubmitGameTest(ctx context.Context, t *testing.T) {

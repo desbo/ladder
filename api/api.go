@@ -35,7 +35,14 @@ func getLaddersForPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Pa
 		return
 	}
 
-	ladders, err := GetLaddersForPlayer(ctx, token)
+	player, err := GetPlayerFromToken(ctx, token)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	ladders, err := GetLaddersForPlayer(ctx, player)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
