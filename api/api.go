@@ -35,7 +35,14 @@ func getLaddersForPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Pa
 		return
 	}
 
-	ladders, err := GetLaddersForPlayer(ctx, token)
+	player, err := GetPlayerFromToken(ctx, token)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	ladders, err := GetLaddersForPlayer(ctx, player)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -47,29 +54,29 @@ func getLaddersForPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Pa
 }
 
 func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	ladder := NewLadder()
-	err := decode(ladder, r)
 	ctx := appengine.NewContext(r)
-
-	if ladder.Name == "" {
-		http.Error(w, "no ladder name provided", http.StatusBadRequest)
-		return
-	}
+	player, err := PlayerFromRequest(r)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	token, err := initAndVerifyToken(ctx, r)
+	ladder, err := NewLadder(ctx, player)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if err := ladder.SetOwner(ctx, token.UID); err != nil {
+	if err := decode(ladder, r); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if !ladder.Valid(ctx) {
+		// TODO: improve error reporting
+		http.Error(w, "Invalid ladder", http.StatusBadRequest)
 		return
 	}
 

@@ -12,6 +12,8 @@ import (
 const LadderKey string = "test"
 const LadderSize = 2
 
+var TestPlayer *Player
+
 // TestLadders represents an end-to-end test of:
 // - creating a ladder
 // - adding players
@@ -31,20 +33,38 @@ func TestLadders(t *testing.T) {
 	t.Run("Create ladder", func(t *testing.T) { CreateLadderTest(ctx, t) })
 	t.Run("Add players", func(t *testing.T) { AddPlayersTest(ctx, LadderSize, t) })
 	t.Run("Submit game", func(t *testing.T) { SubmitGameTest(ctx, t) })
+	t.Run("Get ladders for player", func(t *testing.T) { GetLaddersTest(ctx, t) })
 }
 
 func CreateLadderTest(ctx context.Context, t *testing.T) {
-	l := NewLadder()
+	owner := &Player{
+		FirebaseID:       "owner",
+		Name:             "owner",
+		Rating:           1000,
+		RatingDeviation:  350,
+		RatingVolatility: 0.06,
+	}
+
+	_, err := owner.Save(ctx)
+
+	if err != nil {
+		t.Fatalf("error saving ladder owner %v: %s", owner, err.Error())
+	}
+
+	l, err := NewLadder(ctx, owner)
+
+	if err != nil {
+		t.Fatalf("error creating ladder: %s", err.Error())
+	}
+
 	l.ID = LadderKey
 	l.Name = "test ladder"
 	l.Save(ctx)
 
 	key := datastore.NewKey(ctx, LadderKind, l.ID, 0, nil)
-	result := NewLadder()
+	result := &Ladder{}
 
-	err := datastore.Get(ctx, key, result)
-
-	if err != nil {
+	if err := datastore.Get(ctx, key, result); err != nil {
 		t.Fatal(err)
 	}
 
@@ -86,9 +106,14 @@ func AddPlayersTest(ctx context.Context, ladderSize int, t *testing.T) {
 		if !l.ContainsPlayer(ctx, player) {
 			t.Fatalf("ladder was not reported to contain player %v after adding", player)
 		}
+
+		if TestPlayer == nil {
+			TestPlayer = player
+		}
 	}
 
-	if len(l.Players) != ladderSize {
+	// +1 because we added owner at the start
+	if len(l.Players) != ladderSize+1 {
 		t.Fatalf("incorrect numbers of players in ladder: expected %d, got %d", ladderSize, len(l.Players))
 	}
 
@@ -97,6 +122,31 @@ func AddPlayersTest(ctx context.Context, ladderSize int, t *testing.T) {
 	if err != nil {
 		t.Fatalf("error saving ladder: %s", err.Error())
 	}
+}
+
+func GetLaddersTest(ctx context.Context, t *testing.T) {
+	owner, err := GetPlayer(ctx, "owner")
+
+	if err != nil {
+		t.Fatalf("could not load ladder owner")
+	}
+
+	ls, err := GetLaddersForPlayer(ctx, TestPlayer)
+
+	if err != nil {
+		t.Fatalf("error getting player ladders: %s", err.Error())
+	}
+
+	if len(ls.Playing) != 1 {
+		t.Fatalf("incorrect number of playing ladders for %s (expected %d, got %d)", TestPlayer, 1, len(ls.Playing))
+	}
+
+	ls, err = GetLaddersForPlayer(ctx, owner)
+
+	if len(ls.Owned) != 1 {
+		t.Fatalf("incorrect number of playing ladders for %s (expected %d, got %d)", owner, 1, len(ls.Owned))
+	}
+
 }
 
 func SubmitGameTest(ctx context.Context, t *testing.T) {
@@ -145,7 +195,7 @@ func SubmitGameTest(ctx context.Context, t *testing.T) {
 		t.Fatalf("position of loser set incorrectly")
 	}
 
-	if len(l.Players) != LadderSize {
+	if len(l.Players) != LadderSize+1 {
 		t.Fatalf("wrong number of players in ladder after game: got %d, expected %d", len(l.Players), LadderSize)
 	}
 
