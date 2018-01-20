@@ -29,7 +29,7 @@ type Ladder struct {
 	ID       string         `json:"id"`
 	Created  time.Time      `json:"created"`
 	OwnerKey *datastore.Key `json:"ownerKey"`
-	Players  []LadderPlayer `json:"players"`
+	Players  []LadderPlayer `datastore:"noindex" json:"players"`
 }
 
 // PlayerLadders represents the ladders a player either owns or is playing in
