@@ -6,8 +6,6 @@ import (
 	"sort"
 	"time"
 
-	"firebase.google.com/go/auth"
-
 	"golang.org/x/net/context"
 
 	"github.com/rs/xid"
@@ -31,7 +29,7 @@ type Ladder struct {
 	ID       string         `json:"id"`
 	Created  time.Time      `json:"created"`
 	OwnerKey *datastore.Key `json:"ownerKey"`
-	Players  []LadderPlayer `datastore:"noindex" json:"players"`
+	Players  []LadderPlayer `json:"players"`
 }
 
 // PlayerLadders represents the ladders a player either owns or is playing in
@@ -40,16 +38,23 @@ type PlayerLadders struct {
 	Playing []*Ladder `json:"playing"`
 }
 
-// NewLadder creates a new ladder
-func NewLadder() *Ladder {
-	return &Ladder{
-		Created: time.Now(),
-		ID:      xid.New().String(),
-		Players: make([]LadderPlayer, 0),
-	}
-}
-
 const initialRating = 1000
+
+// NewLadder creates a new ladder
+func NewLadder(ctx context.Context, owner *Player) (*Ladder, error) {
+	l := &Ladder{
+		Created:  time.Now(),
+		ID:       xid.New().String(),
+		Players:  make([]LadderPlayer, 0),
+		OwnerKey: owner.DatastoreKey(ctx),
+	}
+
+	if err := l.AddPlayer(ctx, owner); err != nil {
+		return nil, err
+	}
+
+	return l, nil
+}
 
 // GetLadder gets a ladder by ID
 func GetLadder(ctx context.Context, id string) (*Ladder, error) {
@@ -64,11 +69,11 @@ func GetLadder(ctx context.Context, id string) (*Ladder, error) {
 	return l, nil
 }
 
-func GetLaddersForPlayer(ctx context.Context, token *auth.Token) (*PlayerLadders, error) {
+func GetLaddersForPlayer(ctx context.Context, player *Player) (*PlayerLadders, error) {
 	owned := make([]*Ladder, 0)
 	playing := make([]*Ladder, 0)
 
-	key := PlayerKeyFromToken(ctx, token)
+	key := player.DatastoreKey(ctx)
 
 	_, err := datastore.NewQuery(LadderKind).Filter("OwnerKey = ", key).GetAll(ctx, &owned)
 
@@ -77,7 +82,7 @@ func GetLaddersForPlayer(ctx context.Context, token *auth.Token) (*PlayerLadders
 		return nil, err
 	}
 
-	_, err = datastore.NewQuery(LadderKind).Filter("Players.Key = ", key).GetAll(ctx, &playing)
+	_, err = datastore.NewQuery(LadderKind).Filter("Players.Name = ", player.Name).GetAll(ctx, &playing)
 
 	if err != nil {
 		log.Errorf(ctx, "error querying playing ladders for %v: %v", key, err)
@@ -95,18 +100,6 @@ func GetLaddersForPlayer(ctx context.Context, token *auth.Token) (*PlayerLadders
 		Owned:   owned,
 		Playing: playing,
 	}, nil
-}
-
-func (l *Ladder) SetOwner(ctx context.Context, firebaseID string) error {
-	p, err := GetPlayer(ctx, firebaseID)
-
-	if err != nil {
-		return err
-	}
-
-	l.OwnerKey = p.DatastoreKey(ctx)
-
-	return l.AddPlayer(ctx, p)
 }
 
 func (l *Ladder) ContainsPlayer(ctx context.Context, p *Player) bool {

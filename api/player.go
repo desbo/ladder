@@ -57,8 +57,15 @@ func GetPlayerByEncodedKey(ctx context.Context, key string) (*Player, error) {
 	return p, nil
 }
 
-func PlayerKeyFromToken(ctx context.Context, token *auth.Token) *datastore.Key {
-	return datastore.NewKey(ctx, PlayerKind, token.UID, 0, nil)
+func GetPlayerFromToken(ctx context.Context, token *auth.Token) (*Player, error) {
+	p := &Player{}
+	key := datastore.NewKey(ctx, PlayerKind, token.UID, 0, nil)
+
+	if err := datastore.Get(ctx, key, p); err != nil {
+		return nil, err
+	}
+
+	return p, nil
 }
 
 func PlayerFromLadderPlayer(ctx context.Context, lp LadderPlayer) (*Player, error) {
