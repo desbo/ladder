@@ -280,6 +280,7 @@ func (l *Ladder) Save(ctx context.Context) (*datastore.Key, error) {
 	key := l.DatastoreKey(ctx)
 
 	l.sortPlayers()
+	l.updateWinRates()
 
 	if !l.Valid(ctx) {
 		return nil, fmt.Errorf("Invalid Ladder %s", l)

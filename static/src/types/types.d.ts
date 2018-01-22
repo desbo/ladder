@@ -7,7 +7,8 @@ type LadderPlayer = {
   name: string,
   wins: number,
   losses: number,
-  rating: number
+  rating: number,
+  winRate: number
 }
 
 type Ladder = {
