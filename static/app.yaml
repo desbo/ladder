@@ -7,10 +7,12 @@ threadsafe: true
 handlers:
 - url: /public
   static_dir: public
+  secure: always
 
 - url: /.*
   static_files: index.html
   upload: index.html
+  secure: always
 
 skip_files:
 - ^.*node_modules(/.*)?

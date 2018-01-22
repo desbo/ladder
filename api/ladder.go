@@ -21,6 +21,7 @@ type LadderPlayer struct {
 	Wins     int            `json:"wins"`
 	Losses   int            `json:"losses"`
 	Rating   int            `json:"rating"`
+	WinRate  float32        `json:"winRate"`
 }
 
 // Ladder represents a single ladder
@@ -223,6 +224,16 @@ func (l *Ladder) sortPlayers() {
 	})
 }
 
+func (lp *LadderPlayer) winRate() float32 {
+	return float32(lp.Wins) / float32(lp.Wins+lp.Losses)
+}
+
+func (l *Ladder) updateWinRates() {
+	for i := 0; i < len(l.Players); i++ {
+		l.Players[i].WinRate = l.Players[i].winRate()
+	}
+}
+
 // Games registered against this ladder
 func (l *Ladder) Games(ctx context.Context) ([]*Game, error) {
 	games := make([]*Game, 0)
@@ -267,6 +278,7 @@ func (l *Ladder) Save(ctx context.Context) (*datastore.Key, error) {
 	}
 
 	key := l.DatastoreKey(ctx)
+
 	l.sortPlayers()
 
 	if !l.Valid(ctx) {

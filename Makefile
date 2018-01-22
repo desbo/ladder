@@ -1,6 +1,4 @@
-deploy:
-	cd static && NODE_ENV=production webpack
-	gcloud app deploy api static --project tt-ladder
+deploy: deploy-api deploy-static
 
 deploy-api:
 	gcloud app deploy api --project tt-ladder
