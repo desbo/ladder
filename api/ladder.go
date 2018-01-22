@@ -199,11 +199,6 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) (*Game, error) {
 		winner.Rating = winner.Rating + wa
 		loser.Rating = loser.Rating + la
 
-		// swap positions if the winner was positioned lower (greater number) than the loser
-		if winner.Position > loser.Position {
-			winner.Position, loser.Position = loser.Position, winner.Position
-		}
-
 		if _, err := l.Save(ctx); err != nil {
 			return err
 		}
@@ -220,8 +215,12 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) (*Game, error) {
 
 func (l *Ladder) sortPlayers() {
 	sort.Slice(l.Players, func(i, j int) bool {
-		return l.Players[i].Position < l.Players[j].Position
+		return l.Players[i].Rating < l.Players[j].Rating
 	})
+
+	for i := 0; i < len(l.Players); i++ {
+		l.Players[i].Position = i + 1
+	}
 }
 
 func (lp *LadderPlayer) winRate() float32 {
