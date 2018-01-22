@@ -80,7 +80,7 @@ class ViewLadder extends React.Component<Props, State> {
             <div className="container">
               <div className="columns reverse-row-order">
                 {this.props.user.signedIn && 
-                  <div className="column is-offset-1 is-5">
+                  <div className="column is-5">
                     <div style={{"marginBottom": "-8px"}} className="columns level is-mobile">
                       <div className="column is-6">
                         <h2 className="subtitle is-4 level-item level-left">submit game</h2>
@@ -101,14 +101,14 @@ class ViewLadder extends React.Component<Props, State> {
                 }
 
                 {!this.props.user.signedIn && 
-                  <div className="column is-offset-1 is-5">
+                  <div className="column is-5">
                     <h2 className="subtitle is-4">join this ladder</h2>
                     <Login fullWidth={true} registerOnly={true}
                           onRegister={this.join.bind(this)} />
                   </div>
                 }
 
-                <div className="column is-6">
+                <div className="column is-7">
                   <Table ladder={this.props.ladder} />
                 </div>
               </div>
