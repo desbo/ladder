@@ -1,13 +1,26 @@
 version: 2
 jobs:
+  test:
+    docker:
+      - image: golang
+    steps:
+      - checkout
+      - run:
+          name: run go tests
+          working_directory: api
+          command: go test -v .
+  
   deploy:
     docker:
       - image: google/cloud-sdk
 
-    working_directory: /tmp/ladder
-
     steps:
       - checkout
+      - run:
+          name: install dependencies
+          working_directory: .circleci
+          command: ./setup.sh
+          
       - run:
           name: deploy to app engine
           command: make deploy
