@@ -1,0 +1,22 @@
+version: 2
+jobs:
+  deploy:
+    docker:
+      - image: google/cloud-sdk
+
+    working_directory: /tmp/ladder
+
+    steps:
+      - checkout
+      - run:
+          name: deploy to app engine
+          command: make deploy
+    
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - deploy:
+          filters:
+            branches:
+              only: master
