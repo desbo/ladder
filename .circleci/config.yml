@@ -4,6 +4,8 @@ jobs:
     working_directory: /go/src/github.com/desbo/ladder
     docker:
       - image: google/cloud-sdk
+    environment: 
+      GOPATH: /go
     steps:
       - checkout
       - run:
@@ -16,26 +18,47 @@ jobs:
           name: Install Go depependencies
           working_directory: api
           command: /usr/local/go/bin/go get -t -d -v ./...
+      - run: mkdir -p /tmp/test-results
+      - run: /usr/local/go/bin/go get github.com/jstemmer/go-junit-report
       - run:
           name: Run Go tests
           working_directory: api
-          command: /usr/local/go/bin/go test -v .
-  
+          command: |
+            trap "/go/bin/go-junit-report < /tmp/test-results/go-test.out > /tmp/test-results/go-test-report.xml" EXIT
+            /usr/local/go/bin/go test -v . | tee /tmp/test-results/go-test.out
+      - store_test_results:
+          path: /tmp/test-results
+
   deploy:
     docker:
       - image: google/cloud-sdk
-
     steps:
       - checkout
       - run:
+          name: Dump Google Cloud Credentials to file
+          command: echo ${GOOGLE_AUTH} > ${HOME}/gcp-key.json
+      - run:
+          name: Install Go
+          command: |
+            apt-get install -y wget tar
+            wget https://dl.google.com/go/go1.9.3.linux-amd64.tar.gz
+            tar -C /usr/local -xzf go1.9.3.linux-amd64.tar.gz
+      - run:
+          name: Install Go depependencies
+          working_directory: api
+          command: /usr/local/go/bin/go get -t -d -v ./...
+      - run:
           name: Install deployment dependencies
           working_directory: .circleci
-          command: ./setup.sh
-          
+          command: ./setup-deploy.sh
+      - run:
+          name: Install JS dependencies
+          working_directory: static
+          command: yarn install
       - run:
           name: Deploy to App Engine
           command: make deploy
-    
+
 workflows:
   version: 2
   test-deploy:

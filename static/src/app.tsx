@@ -9,7 +9,7 @@ import API from 'api';
 
 import { Actions, signIn, setPlayerLadders } from 'actions/actions';
 
-import Router  from 'components/router';
+import Router  from 'components/Router';
 
 import userReducer from 'reducers/user';
 import viewReducer from 'reducers/view';
