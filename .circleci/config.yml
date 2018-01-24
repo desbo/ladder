@@ -8,7 +8,7 @@ jobs:
       - checkout
       - run:
           name: Install Go
-          command: apt-get install golang
+          command: apt-get install -y golang
       - run:
           name: Install Go depependencies
           working_directory: api
