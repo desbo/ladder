@@ -7,8 +7,8 @@ const Table = ({ ladder }: { ladder: Ladder }) =>
         <th><abbr title="position"></abbr></th>
         <th>Name</th>
         <th>Played</th>
-        <th>Won</th>
-        <th>Lost</th>
+        <th className="is-hidden-mobile">Won</th>
+        <th className="is-hidden-mobile">Lost</th>
         <th>Win %</th>
         <th>Rating</th>
       </tr>
@@ -19,8 +19,8 @@ const Table = ({ ladder }: { ladder: Ladder }) =>
         <td>{p.position}</td>
         <td>{p.name}</td>
         <td>{p.wins + p.losses}</td>
-        <td>{p.wins}</td>
-        <td>{p.losses}</td>
+        <td className="is-hidden-mobile">{p.wins}</td>
+        <td className="is-hidden-mobile">{p.losses}</td>
         <td>{Math.round(p.winRate * 100)}%</td>
         <td>{p.rating}</td>
       </tr>)}
