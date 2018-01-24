@@ -7,14 +7,12 @@ import (
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/auth"
 	"golang.org/x/net/context"
-	"google.golang.org/api/option"
 )
 
 const firebaseTokenHeader = "Firebase-Token"
 
 func initFirebase(ctx context.Context) (*firebase.App, error) {
-	opt := option.WithCredentialsFile("firebase_key.json")
-	return firebase.NewApp(ctx, nil, opt)
+	return firebase.NewApp(ctx, nil)
 }
 
 func getFirebaseToken(r *http.Request) string {
