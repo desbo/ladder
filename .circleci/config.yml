@@ -8,7 +8,7 @@ jobs:
       - run:
           name: install go deps
           working_directory: api
-          command: go get -t ./..
+          command: go get -t ./...
       - run:
           name: run go tests
           working_directory: api
