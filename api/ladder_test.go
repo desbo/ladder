@@ -191,7 +191,7 @@ func SubmitGameTest(ctx context.Context, t *testing.T) {
 		t.Fatalf("position of winner set incorrectly")
 	}
 
-	if l.Players[1].Name != loser.Name {
+	if l.Players[len(l.Players)-1].Name != loser.Name {
 		t.Fatalf("position of loser set incorrectly")
 	}
 
