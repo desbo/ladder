@@ -1,9 +1,10 @@
 version: 2
 jobs:
   test:
-    working_directory: /go/src/github.com/desbo/ladder
+    working_directory: /go/src/github.com/desbo/ladderg
     docker:
       - image: golang
+      - image: google/cloud-sdk
     steps:
       - checkout
       - run:
