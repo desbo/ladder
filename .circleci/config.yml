@@ -1,6 +1,7 @@
 version: 2
 jobs:
   test:
+    working_directory: /go/src/github.com/desbo/ladder
     docker:
       - image: golang
     steps:
@@ -8,7 +9,7 @@ jobs:
       - run:
           name: install go deps
           working_directory: api
-          command: go get -t ./...
+          command: go get -t -d -v ./...
       - run:
           name: run go tests
           working_directory: api
