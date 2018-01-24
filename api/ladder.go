@@ -3,7 +3,6 @@ package app
 import (
 	"errors"
 	"fmt"
-	"sort"
 	"time"
 
 	"golang.org/x/net/context"
@@ -13,28 +12,17 @@ import (
 	"google.golang.org/appengine/log"
 )
 
-// LadderPlayer is a player in a ladder
-type LadderPlayer struct {
-	Key      *datastore.Key `json:"key" datastore:"__key__"` // firebase ID
-	Name     string         `json:"name"`
-	Position int            `json:"position"`
-	Wins     int            `json:"wins"`
-	Losses   int            `json:"losses"`
-	Rating   int            `json:"rating"`
-	WinRate  float32        `json:"winRate"`
-}
-
 // Ladder represents a single ladder
 type Ladder struct {
 	Name     string         `json:"name"`
 	ID       string         `json:"id"`
 	Created  time.Time      `json:"created"`
 	OwnerKey *datastore.Key `json:"ownerKey"`
-	Players  []LadderPlayer `json:"players"`
+	Players  LadderPlayers  `json:"players"`
 }
 
-// PlayerLadders represents the ladders a player either owns or is playing in
-type PlayerLadders struct {
+// LaddersForPlayer represents the ladders a player either owns or is playing in
+type LaddersForPlayer struct {
 	Owned   []*Ladder `json:"owned"`
 	Playing []*Ladder `json:"playing"`
 }
@@ -67,10 +55,12 @@ func GetLadder(ctx context.Context, id string) (*Ladder, error) {
 		return nil, err
 	}
 
+	l.Players.sortByRanking()
+
 	return l, nil
 }
 
-func GetLaddersForPlayer(ctx context.Context, player *Player) (*PlayerLadders, error) {
+func GetLaddersForPlayer(ctx context.Context, player *Player) (*LaddersForPlayer, error) {
 	owned := make([]*Ladder, 0)
 	playing := make([]*Ladder, 0)
 
@@ -97,7 +87,7 @@ func GetLaddersForPlayer(ctx context.Context, player *Player) (*PlayerLadders, e
 		}
 	}
 
-	return &PlayerLadders{
+	return &LaddersForPlayer{
 		Owned:   owned,
 		Playing: playing,
 	}, nil
@@ -213,20 +203,6 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) (*Game, error) {
 	return g, nil
 }
 
-func (l *Ladder) sortPlayers() {
-	sort.Slice(l.Players, func(i, j int) bool {
-		return l.Players[i].Rating < l.Players[j].Rating
-	})
-
-	for i := 0; i < len(l.Players); i++ {
-		l.Players[i].Position = i + 1
-	}
-}
-
-func (lp *LadderPlayer) winRate() float32 {
-	return float32(lp.Wins) / float32(lp.Wins+lp.Losses)
-}
-
 func (l *Ladder) updateWinRates() {
 	for i := 0; i < len(l.Players); i++ {
 		l.Players[i].WinRate = l.Players[i].winRate()
@@ -277,8 +253,6 @@ func (l *Ladder) Save(ctx context.Context) (*datastore.Key, error) {
 	}
 
 	key := l.DatastoreKey(ctx)
-
-	l.sortPlayers()
 	l.updateWinRates()
 
 	if !l.Valid(ctx) {
