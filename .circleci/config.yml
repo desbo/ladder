@@ -3,10 +3,12 @@ jobs:
   test:
     working_directory: /go/src/github.com/desbo/ladder
     docker:
-      - image: golang
       - image: google/cloud-sdk
     steps:
       - checkout
+      - run:
+          name: Install Go
+          command: apt-get install golang
       - run:
           name: Install Go depependencies
           working_directory: api
