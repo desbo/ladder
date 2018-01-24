@@ -1,18 +1,18 @@
 version: 2
 jobs:
   test:
-    working_directory: /go/src/github.com/desbo/ladderg
+    working_directory: /go/src/github.com/desbo/ladder
     docker:
       - image: golang
       - image: google/cloud-sdk
     steps:
       - checkout
       - run:
-          name: install go deps
+          name: Install Go depependencies
           working_directory: api
           command: go get -t -d -v ./...
       - run:
-          name: run go tests
+          name: Run Go tests
           working_directory: api
           command: go test -v .
   
@@ -23,20 +23,22 @@ jobs:
     steps:
       - checkout
       - run:
-          name: install dependencies
+          name: Install deployment dependencies
           working_directory: .circleci
           command: ./setup.sh
           
       - run:
-          name: deploy to app engine
+          name: Deploy to App Engine
           command: make deploy
     
 workflows:
   version: 2
-  build-deploy-test:
+  test-deploy:
     jobs:
       - test
       - deploy:
+          requires:
+            - test
           filters:
             branches:
               only: master
