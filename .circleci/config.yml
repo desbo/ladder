@@ -49,6 +49,7 @@ jobs:
           command: /usr/local/go/bin/go get -t -d -v ./...
       - run:
           name: Add gcloud auth
+          working_directory: .circleci
           command: ./gcloud-auth.sh
       - run:
           name: Deploy to App Engine
@@ -74,6 +75,10 @@ jobs:
           working_directory: static
           command: yarn install
       - run:
+          name: Add gcloud auth
+          working_directory: .circleci
+          command: ./gcloud-auth.sh
+      - run:
           name: Deploy to App Engine
           command: make deploy-static
       - save_cache:
@@ -95,3 +100,4 @@ workflows:
           filters:
             branches:
               only: master
+              
