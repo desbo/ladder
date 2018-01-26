@@ -7,6 +7,15 @@ function format(date: string): string {
   return new Date(Date.parse(date)).toLocaleString();
 }
 
+function distinct(ls: Array<Ladder>): Array<Ladder> {
+  return ls.reduce((ladders, ladder) => {
+    if (ladders.some(l => l.id === ladder.id))
+      return ladders
+    else 
+      return ladders.concat(ladder)
+  }, [])
+}
+
 const LadderList = ({ 
   owned, 
   playing, 
@@ -27,8 +36,7 @@ const LadderList = ({
       </thead>
 
       <tbody>
-        {owned.concat(playing).map(ladder => {
-
+        {distinct(owned.concat(playing)).map(ladder => {
           return <tr key={ladder.id}>
             <td><Link to={`/ladder/${ladder.id}`}>{ladder.name}</Link></td>
             <td key={`${ladder.id}-date`}>{format(ladder.created)}</td>
