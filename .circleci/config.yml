@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  test:
+  test-api:
     working_directory: /go/src/github.com/desbo/ladder
     docker:
       - image: google/cloud-sdk
@@ -29,14 +29,11 @@ jobs:
       - store_test_results:
           path: /tmp/test-results
 
-  deploy:
+  deploy-api:
     docker:
       - image: google/cloud-sdk
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - yarn-{{ checksum "static/yarn.lock" }}
       - run:
           name: Dump Google Cloud Credentials to file
           command: echo ${GOOGLE_AUTH} > ${HOME}/gcp-key.json
@@ -51,16 +48,34 @@ jobs:
           working_directory: api
           command: /usr/local/go/bin/go get -t -d -v ./...
       - run:
-          name: Install deployment dependencies
+          name: Add gcloud auth
+          command: ./gcloud-auth.sh
+      - run:
+          name: Deploy to App Engine
+          command: make deploy-api
+    
+  deploy-static:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - yarn-{{ checksum "static/yarn.lock" }}
+      - run:
+          name: Dump Google Cloud Credentials to file
+          command: echo ${GOOGLE_AUTH} > ${HOME}/gcp-key.json
+      - run:
+          name: Install node/yarn
           working_directory: .circleci
-          command: ./setup-deploy.sh
+          command: ./static-build-deps.sh
       - run:
           name: Install JS dependencies
           working_directory: static
           command: yarn install
       - run:
           name: Deploy to App Engine
-          command: make deploy
+          command: make deploy-static
       - save_cache:
           key: yarn-{{ checksum "static/yarn.lock" }}
           paths: static/node_modules
@@ -69,10 +84,14 @@ workflows:
   version: 2
   test-deploy:
     jobs:
-      - test
-      - deploy:
+      - test-api
+      - deploy-api:
           requires:
-            - test
+            - test-api
+          filters:
+            branches:
+              only: master
+      - deploy-static:
           filters:
             branches:
               only: master
