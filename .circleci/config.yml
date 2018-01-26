@@ -34,6 +34,9 @@ jobs:
       - image: google/cloud-sdk
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - yarn-{{ checksum "static/yarn.lock" }}
       - run:
           name: Dump Google Cloud Credentials to file
           command: echo ${GOOGLE_AUTH} > ${HOME}/gcp-key.json
@@ -58,6 +61,9 @@ jobs:
       - run:
           name: Deploy to App Engine
           command: make deploy
+      - save_cache:
+          key: yarn-{{ checksum "static/yarn.lock" }}
+          paths: static/node_modules
 
 workflows:
   version: 2
