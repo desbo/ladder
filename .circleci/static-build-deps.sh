@@ -7,6 +7,3 @@ echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/source
 
 sudo apt-get update
 sudo apt-get install -y build-essential nodejs yarn
-
-gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
-gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
