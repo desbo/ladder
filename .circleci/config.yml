@@ -52,6 +52,9 @@ jobs:
           working_directory: .circleci
           command: ./gcloud-auth.sh
       - run:
+          name: Install make
+          command: apt-get install -y make 
+      - run:
           name: Deploy to App Engine
           command: make deploy-api
     
