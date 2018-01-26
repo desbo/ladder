@@ -27,7 +27,7 @@ const LadderList = ({
       </thead>
 
       <tbody>
-        {owned.map(ladder => {
+        {owned.concat(playing).map(ladder => {
 
           return <tr key={ladder.id}>
             <td><Link to={`/ladder/${ladder.id}`}>{ladder.name}</Link></td>
