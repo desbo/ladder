@@ -1,3 +1,4 @@
 api/firebase_key.json
+api/firebase_key.prod.json
 node_modules
 static/public

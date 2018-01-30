@@ -2,7 +2,9 @@ package app
 
 // LadderPlayer is a player in a ladder
 import (
+	"context"
 	"sort"
+	"time"
 
 	"google.golang.org/appengine/datastore"
 )
@@ -15,9 +17,22 @@ type LadderPlayer struct {
 	Losses   int            `json:"losses"`
 	Rating   int            `json:"rating"`
 	WinRate  float32        `json:"winRate"`
+	JoinDate time.Time      `json:"joinDate"`
 }
 
 type LadderPlayers []LadderPlayer
+
+func NewLadderPlayer(ctx context.Context, p *Player, position int) LadderPlayer {
+	return LadderPlayer{
+		Key:      p.DatastoreKey(ctx),
+		Position: position,
+		Name:     p.Name,
+		Wins:     0,
+		Losses:   0,
+		Rating:   p.Rating,
+		JoinDate: time.Now(),
+	}
+}
 
 func (lp *LadderPlayer) winRate() float32 {
 	if lp.Wins == 0 {
