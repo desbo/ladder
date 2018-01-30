@@ -102,7 +102,6 @@ func (l *Ladder) ContainsPlayer(ctx context.Context, p *Player) bool {
 }
 
 func (l *Ladder) AddPlayer(ctx context.Context, p *Player) error {
-	key := p.DatastoreKey(ctx)
 	_, err := GetPlayer(ctx, p.FirebaseID)
 
 	if err != nil {
@@ -113,15 +112,7 @@ func (l *Ladder) AddPlayer(ctx context.Context, p *Player) error {
 		return fmt.Errorf("Ladder %s (ID: %s) already contains player with ID %s", l.Name, l.ID, p.FirebaseID)
 	}
 
-	lp := LadderPlayer{
-		Key:      key,
-		Position: len(l.Players) + 1,
-		Name:     p.Name,
-		Wins:     0,
-		Losses:   0,
-		Rating:   p.Rating,
-	}
-
+	lp := NewLadderPlayer(ctx, p, len(l.Players)+1)
 	l.Players = append(l.Players, lp)
 
 	return nil
@@ -256,7 +247,7 @@ func (l *Ladder) Save(ctx context.Context) (*datastore.Key, error) {
 	l.Players.sortByRanking()
 
 	if !l.Valid(ctx) {
-		return nil, fmt.Errorf("Invalid Ladder %s", l)
+		return nil, fmt.Errorf("Invalid Ladder %v", l)
 	}
 
 	return datastore.Put(ctx, key, l)
