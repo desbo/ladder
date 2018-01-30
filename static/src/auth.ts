@@ -3,15 +3,6 @@ import { Store } from 'redux';
 import { User } from 'firebase';
 import API from 'api';
 
-const config = {
-  apiKey: 'AIzaSyBeUnA3-wodE50jIpaEqOVA_h_SXmxCOOQ',
-  authDomain: 'tt-ladder.firebaseapp.com',
-  databaseURL: 'https://tt-ladder.firebaseio.com',
-  projectId: 'tt-ladder',
-  storageBucket: 'tt-ladder.appspot.com',
-  messagingSenderId: '230896970422'
-};
-
 let firebaseApp: null | FirebaseApp = null
 
 export class FirebaseApp {
@@ -65,7 +56,7 @@ export class FirebaseApp {
 }
 
 export function initFirebase(): FirebaseApp {
-  if (!firebaseApp) firebaseApp = new FirebaseApp(config);
+  if (!firebaseApp) firebaseApp = new FirebaseApp(FIREBASE_CONFIG);
   return firebaseApp;
 }
 

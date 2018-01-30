@@ -47,7 +47,9 @@ module.exports = {
       API_URL: JSON.stringify(prod ? 'https://api-dot-tt-ladder.appspot.com' : 'http://localhost:8080'),
       'process.env': {
         'NODE_ENV': JSON.stringify(prod ? 'production' : '')
-      }
+      },
+
+      FIREBASE_CONFIG: JSON.stringify(prod ? require('./firebase_config.js').prod : require('./firebase_config.js').dev)
     }),
 
     prod ? new UglifyJsPlugin({

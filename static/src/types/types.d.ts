@@ -1,5 +1,7 @@
-// API URL, set in webpack config
+// constants set by webpack define plugin
 declare const API_URL: string;
+declare const FIREBASE_CONFIG: Object;
+
 
 type LadderPlayer = {
   key: string,
