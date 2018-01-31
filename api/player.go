@@ -2,6 +2,7 @@ package app
 
 import (
 	"net/http"
+	"time"
 
 	"firebase.google.com/go/auth"
 	"golang.org/x/net/context"
@@ -12,11 +13,12 @@ import (
 // Player is a user in the system that can create and join ladders
 // FirebaseID is used as the datastore key
 type Player struct {
-	FirebaseID       string  `json:"-"`
-	Name             string  `json:"name"`
-	Rating           int     `json:"rating,int"`
-	RatingDeviation  float64 `json:"-"`
-	RatingVolatility float64 `json:"-"`
+	FirebaseID       string    `json:"-"`
+	Name             string    `json:"name"`
+	Rating           int       `json:"rating"`
+	RatingDeviation  float64   `json:"-"`
+	RatingVolatility float64   `json:"-"`
+	SignupDate       time.Time `json:"signupDate"`
 }
 
 // NewPlayer creates a new player
@@ -28,6 +30,7 @@ func NewPlayer(token *auth.Token, name string) *Player {
 		Rating:           1000,
 		RatingDeviation:  350,
 		RatingVolatility: 0.06,
+		SignupDate:       time.Now(),
 	}
 }
 
