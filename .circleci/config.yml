@@ -1,5 +1,18 @@
 version: 2
 jobs:
+  delete-old-version:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - run:
+          name: Dump Google Cloud Credentials to file
+          command: echo ${GOOGLE_AUTH} > ${HOME}/gcp-key.json
+      - run:
+          name: Delete old version
+          working_directory: .circleci
+          command: ./delete-old-version.sh
+
   test-api:
     working_directory: /go/src/github.com/desbo/ladder
     docker:
@@ -77,6 +90,9 @@ jobs:
           name: Install JS dependencies
           working_directory: static
           command: yarn install
+      - save_cache:
+          key: yarn-{{ checksum "static/yarn.lock" }}
+          paths: static/node_modules
       - run:
           name: Add gcloud auth
           working_directory: .circleci
@@ -84,22 +100,23 @@ jobs:
       - run:
           name: Deploy to App Engine
           command: make deploy-static
-      - save_cache:
-          key: yarn-{{ checksum "static/yarn.lock" }}
-          paths: static/node_modules
 
 workflows:
   version: 2
   test-deploy:
     jobs:
+      - delete-old-version
       - test-api
       - deploy-api:
           requires:
+            - delete-old-version
             - test-api
           filters:
             branches:
               only: master
       - deploy-static:
+          requires:
+            - delete-old-version
           filters:
             branches:
               only: master
