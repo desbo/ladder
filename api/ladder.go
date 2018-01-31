@@ -33,10 +33,11 @@ const initialRating = 1000
 // NewLadder creates a new ladder
 func NewLadder(ctx context.Context, owner *Player) (*Ladder, error) {
 	l := &Ladder{
-		Created:  time.Now(),
-		ID:       xid.New().String(),
-		Players:  make([]LadderPlayer, 0),
-		OwnerKey: owner.DatastoreKey(ctx),
+		Created:          time.Now(),
+		ID:               xid.New().String(),
+		Players:          make([]LadderPlayer, 0),
+		OwnerKey:         owner.DatastoreKey(ctx),
+		InactivityPeriod: 7, // TODO: Add to UI
 	}
 
 	if err := l.AddPlayer(ctx, owner); err != nil {
