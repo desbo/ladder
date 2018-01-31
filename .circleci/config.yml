@@ -105,7 +105,10 @@ workflows:
   version: 2
   test-deploy:
     jobs:
-      - delete-old-version
+      - delete-old-version:
+          filters:
+              branches:
+                only: master
       - test-api
       - deploy-api:
           requires:

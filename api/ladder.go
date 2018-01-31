@@ -14,11 +14,12 @@ import (
 
 // Ladder represents a single ladder
 type Ladder struct {
-	Name     string         `json:"name"`
-	ID       string         `json:"id"`
-	Created  time.Time      `json:"created"`
-	OwnerKey *datastore.Key `json:"ownerKey"`
-	Players  LadderPlayers  `json:"players"`
+	Name             string         `json:"name"`
+	ID               string         `json:"id"`
+	Created          time.Time      `json:"created"`
+	OwnerKey         *datastore.Key `json:"ownerKey"`
+	Players          LadderPlayers  `json:"players"`
+	InactivityPeriod int            `json:"-"`
 }
 
 // LaddersForPlayer represents the ladders a player either owns or is playing in

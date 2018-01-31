@@ -101,6 +101,42 @@ func (p *Player) Equals(o Player) bool {
 	return p.FirebaseID == o.FirebaseID
 }
 
+func (p *Player) Games(ctx context.Context) ([]*Game, error) {
+	games := make([]*Game, 0)
+
+	if _, err := datastore.NewQuery(GameKind).
+		Filter("Player1.Player.FirebaseID = ", p.FirebaseID).
+		GetAll(ctx, games); err != nil {
+		return nil, err
+	}
+
+	if _, err := datastore.NewQuery(GameKind).
+		Filter("Player2.Player.FirebaseID = ", p.FirebaseID).
+		GetAll(ctx, games); err != nil {
+		return nil, err
+	}
+
+	return games, nil
+}
+
+func (p *Player) LastActive(ctx context.Context) (*time.Time, error) {
+	games, err := p.Games(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	t := p.SignupDate
+
+	for _, game := range games {
+		if game.Date.After(t) {
+			t = game.Date
+		}
+	}
+
+	return &t, nil
+}
+
 // Save a player to the DB
 func (p *Player) Save(ctx context.Context) (*datastore.Key, error) {
 	key := p.DatastoreKey(ctx)
