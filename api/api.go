@@ -181,16 +181,18 @@ func submitGame(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	ladder, err := GetLadder(ctx, form.LadderID)
 
 	if err != nil {
-		log.Errorf(ctx, "error getting ladder %s: %s", form.LadderID, err.Error())
+		log.Errorf(ctx, "error logging game %s (could not get ladder %s: %s)", game.ID, form.LadderID, err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if game, err = ladder.LogGame(ctx, game); err != nil {
-		log.Errorf(ctx, "error logging game %s: %s", game, err.Error())
+		log.Errorf(ctx, "error logging game %s: %s", game.ID, err.Error())
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	log.Infof(ctx, "logged game %s", game.ID)
 
 	json.NewEncoder(w).Encode(game)
 }
