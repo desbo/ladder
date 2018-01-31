@@ -23,11 +23,11 @@ class API {
     });
   }
 
-  getLadder(id: string): Promise<any> {
+  getLadder(id: string): Promise<Ladder> {
     return API.fetchWithToken(`${this.url}/ladder/${id}`)
   }
 
-  getLadders(): Promise<any> {
+  getLadders(): Promise<LadderState> {
     return API.fetchWithToken(`${this.url}/ladders`);
   }
 

@@ -57,6 +57,7 @@ type LoginFormInput = {
 
 type UserState = {
   formInput: LoginFormInput,
+  inlineFormInput: LoginFormInput,
   signedIn: boolean,
   username: null | string
 }

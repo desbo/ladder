@@ -25,7 +25,7 @@ export class FirebaseApp {
 
   signIn(email: string, password: string): Promise<User> {
     return this.app.auth().signInWithEmailAndPassword(email, password)
-      .then(() => this.app.auth().currentUser);;
+      .then(() => this.app.auth().currentUser);
   }
 
   updateProfile(displayName: string, photoURL: string): Promise<any> {

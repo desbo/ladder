@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import UserMenu from 'components/nav/UserMenu';
+import NavLogin from 'components/nav/NavLogin';
 import { Link } from 'react-router-dom';
 
 export default function Navbar({
@@ -17,7 +18,11 @@ export default function Navbar({
           <div className="navbar-item title is-4"><Link to="/">🏓</Link></div>
         </div>
 
-        {username && <UserMenu username={username} signOut={signOut} /> }
+        {username ?
+          <UserMenu username={username} signOut={signOut} /> :
+          (window.location.pathname !== '/' && <NavLogin />)
+        }
+
       </div>
     </nav>
   );

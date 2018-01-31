@@ -80,24 +80,36 @@ class ViewLadder extends React.Component<Props, State> {
             <div className="container">
               <div className="columns reverse-row-order">
                 {this.props.user.signedIn && 
-                  <div className="column is-5">
-                    <div style={{"marginBottom": "-8px"}} className="columns level is-mobile">
-                      <div className="column is-6">
-                        <h2 className="subtitle is-4 level-item level-left">submit game</h2>
+                    (this.props.ladder.players.some(p => p.name == this.props.user.username) ?
+                      <div className="column is-5">
+                        <div style={{"marginBottom": "-8px"}} className="columns level is-mobile">
+                          <div className="column is-6">
+                            <h2 className="subtitle is-4 level-item level-left">submit game</h2>
+                          </div>
+                          <div className="column is-6">
+                            <PlayerDropdown 
+                              players={this.props.ladder.players.filter(p => p.name !== this.props.user.username )}
+                              onSelect={this.props.selectOpponent} />
+                          </div>
+                        </div>
+                      
+                        <SubmitGame 
+                          user={this.props.user} 
+                          ladder={this.props.ladder} 
+                          opponent={this.props.opponent}
+                          onSubmit={() => this.fetch().then(this.props.clearOpponent)} />
+                      </div> :
+                        
+                      <div className="column is-5 has-text-centered">
+                        <button 
+                          onClick={() => API.joinLadder(this.props.ladder.id)
+                            .then(() => API.getLadder(this.props.ladder.id))
+                            .then(ladder => this.props.setLadder(ladder))}
+                          className="button is-primary">
+                            join this ladder
+                        </button>
                       </div>
-                      <div className="column is-6">
-                        <PlayerDropdown 
-                          players={this.props.ladder.players.filter(p => p.name !== this.props.user.username )}
-                          onSelect={this.props.selectOpponent} />
-                      </div>
-                    </div>
-                    
-                    <SubmitGame 
-                      user={this.props.user} 
-                      ladder={this.props.ladder} 
-                      opponent={this.props.opponent}
-                      onSubmit={() => this.fetch().then(this.props.clearOpponent)} />
-                  </div>
+                    )
                 }
 
                 {!this.props.user.signedIn && 
