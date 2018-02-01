@@ -206,15 +206,22 @@ func inactive(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	json.NewEncoder(w).Encode("OK")
 }
 
+func jsonify(f func(w http.ResponseWriter, r *http.Request, p httprouter.Params)) func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		w.Header().Set("Content-Type", "application/json")
+		f(w, r, p)
+	}
+}
+
 func init() {
 	router := httprouter.New()
 
-	router.POST("/game", submitGame)
-	router.POST("/join/:id", joinLadder)
-	router.GET("/ladder/:id", getLadder)
-	router.POST("/ladder", createLadder)
-	router.GET("/ladders", getLaddersForPlayer)
-	router.POST("/player", createPlayer)
+	router.POST("/game", jsonify(submitGame))
+	router.POST("/join/:id", jsonify(joinLadder))
+	router.GET("/ladder/:id", jsonify(getLadder))
+	router.POST("/ladder", jsonify(createLadder))
+	router.GET("/ladders", jsonify(getLaddersForPlayer))
+	router.POST("/player", jsonify(createPlayer))
 
 	router.GET("/cron/inactive", inactive)
 
