@@ -38,14 +38,16 @@ type Props = {
 };
 
 type State = {
-  failed: boolean
+  failed: boolean,
+  joining: boolean
 }
 
 class ViewLadder extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      failed: false
+      failed: false,
+      joining: false,
     };
   }
 
@@ -60,8 +62,11 @@ class ViewLadder extends React.Component<Props, State> {
   }
 
   join() {
+    this.setState({ joining: true });
+
     return API.joinLadder(this.props.ladder.id)
       .then(this.fetch.bind(this))
+      .then(() => this.setState({ joining: false }));
   }
 
   render() {
@@ -105,7 +110,8 @@ class ViewLadder extends React.Component<Props, State> {
                           onClick={() => API.joinLadder(this.props.ladder.id)
                             .then(() => API.getLadder(this.props.ladder.id))
                             .then(ladder => this.props.setLadder(ladder))}
-                          className="button is-primary">
+                          className={`button is-primary ${this.state.joining ? 'is-loading' : ''}`}
+                          disabled={this.state.joining}>
                             join this ladder
                         </button>
                       </div>
