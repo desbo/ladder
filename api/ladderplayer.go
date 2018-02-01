@@ -1,4 +1,4 @@
-package app
+package api
 
 // LadderPlayer is a player in a ladder
 import (
