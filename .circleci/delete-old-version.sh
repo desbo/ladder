@@ -6,16 +6,15 @@ gcloud auth activate-service-account --key-file ${HOME}/gcp-key.json
 MAX_VERSIONS=15
 NUM_VERSIONS=$(gcloud app versions list --project tt-ladder --format list | wc -l)
 
-if [ $NUM_VERSIONS -ge $MAX_VERSIONS ]; then
-  OLDEST_VERSION=$(gcloud app versions list \
+if [ $NUM_VERSIONS -ge $(($MAX_VERSIONS - 2)) ]; then
+  gcloud app versions list \
     --project tt-ladder \
     --sort-by=LAST_DEPLOYED \
-    --limit 1 \
-    --format="value(version.id)")
- 
-  gcloud app versions delete --quiet --project tt-ladder $OLDEST_VERSION
+    --limit 2 \
+    --format="value(version.id)" |
+    xargs gcloud app versions delete --quiet --project tt-ladder
 
-  echo "deleted $OLDEST_VERSION"
+  exit 0
 fi
 
 echo "nothing to delete ($(expr $NUM_VERSIONS + 0) versions)"
