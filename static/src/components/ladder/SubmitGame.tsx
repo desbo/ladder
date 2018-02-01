@@ -10,6 +10,7 @@ type Props = {
 }
 
 type State = {
+  submitting: boolean,
   scores: {
     user: string,
     opponent: string
@@ -46,7 +47,9 @@ export default class SubmitGame extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props);
+
     this.state = {
+      submitting: false,
       scores: {
         user: "",
         opponent: "" 
@@ -65,6 +68,8 @@ export default class SubmitGame extends React.Component<Props, State> {
   }
 
   submit() {
+    this.setState({ submitting: true });
+
     return API.submitGame(
       this.props.ladder.id,
       this.props.opponent, 
@@ -72,6 +77,7 @@ export default class SubmitGame extends React.Component<Props, State> {
       parseInt(this.state.scores.opponent)
     ).then((game: Game) => {
       this.setState({
+        submitting: false,
         scores: {
           user: "",
           opponent: "" 
@@ -108,8 +114,8 @@ export default class SubmitGame extends React.Component<Props, State> {
         </div>
 
         <div className="has-text-centered">
-          <button disabled={!this.state.scores.user || !this.state.scores.opponent}
-                  className="button is-primary"
+          <button disabled={this.state.submitting || !this.state.scores.user || !this.state.scores.opponent}
+                  className={`button is-primary ${this.state.submitting ? 'is-loading' : ''}`}
                   onClick={this.submit.bind(this)}>submit</button>
         </div>
       </form>
