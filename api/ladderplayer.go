@@ -18,6 +18,7 @@ type LadderPlayer struct {
 	Rating   int            `json:"rating"`
 	WinRate  float32        `json:"winRate"`
 	JoinDate time.Time      `json:"joinDate"`
+	Active   bool           `json:"active"`
 }
 
 type LadderPlayers []LadderPlayer
@@ -31,6 +32,7 @@ func NewLadderPlayer(ctx context.Context, p *Player, position int) LadderPlayer 
 		Losses:   0,
 		Rating:   p.Rating,
 		JoinDate: time.Now(),
+		Active:   true,
 	}
 }
 

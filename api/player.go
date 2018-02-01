@@ -10,7 +10,7 @@ import (
 	"google.golang.org/appengine/datastore"
 )
 
-// Player is a user in the system that can create and join ladders
+// Player is a user in thesystem that can create and join ladders
 // FirebaseID is used as the datastore key
 type Player struct {
 	FirebaseID       string    `json:"-"`
@@ -106,13 +106,13 @@ func (p *Player) Games(ctx context.Context) ([]*Game, error) {
 
 	if _, err := datastore.NewQuery(GameKind).
 		Filter("Player1.Player.FirebaseID = ", p.FirebaseID).
-		GetAll(ctx, games); err != nil {
+		GetAll(ctx, &games); err != nil {
 		return nil, err
 	}
 
 	if _, err := datastore.NewQuery(GameKind).
 		Filter("Player2.Player.FirebaseID = ", p.FirebaseID).
-		GetAll(ctx, games); err != nil {
+		GetAll(ctx, &games); err != nil {
 		return nil, err
 	}
 

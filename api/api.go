@@ -197,6 +197,15 @@ func submitGame(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	json.NewEncoder(w).Encode(game)
 }
 
+func inactive(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	if err := CheckInactivity(appengine.NewContext(r)); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	json.NewEncoder(w).Encode("OK")
+}
+
 func init() {
 	router := httprouter.New()
 
@@ -206,6 +215,8 @@ func init() {
 	router.POST("/ladder", createLadder)
 	router.GET("/ladders", getLaddersForPlayer)
 	router.POST("/player", createPlayer)
+
+	router.GET("/cron/inactive", inactive)
 
 	http.Handle("/", cors.AllowAll().Handler(router))
 }

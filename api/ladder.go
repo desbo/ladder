@@ -19,7 +19,8 @@ type Ladder struct {
 	Created          time.Time      `json:"created"`
 	OwnerKey         *datastore.Key `json:"ownerKey"`
 	Players          LadderPlayers  `json:"players"`
-	InactivityPeriod int            `json:"-"`
+	InactivityPeriod time.Duration  `json:"-"`
+	Active           bool           `json:"active"`
 }
 
 // LaddersForPlayer represents the ladders a player either owns or is playing in
@@ -33,11 +34,12 @@ const initialRating = 1000
 // NewLadder creates a new ladder
 func NewLadder(ctx context.Context, owner *Player) (*Ladder, error) {
 	l := &Ladder{
-		Created:          time.Now(),
 		ID:               xid.New().String(),
+		Created:          time.Now(),
+		Active:           true,
 		Players:          make([]LadderPlayer, 0),
 		OwnerKey:         owner.DatastoreKey(ctx),
-		InactivityPeriod: 7, // TODO: Add to UI
+		InactivityPeriod: 7 * 24 * time.Hour, // TODO: Add to UI
 	}
 
 	if err := l.AddPlayer(ctx, owner); err != nil {
