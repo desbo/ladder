@@ -177,6 +177,9 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) (*Game, error) {
 			return err
 		}
 
+		winner.Active = true
+		loser.Active = true
+
 		winner.Wins = winner.Wins + 1
 		loser.Losses = loser.Losses + 1
 		winner.Rating = winner.Rating + wa

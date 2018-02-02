@@ -60,7 +60,14 @@ func (lps LadderPlayers) Swap(i, j int) {
 func (lps LadderPlayers) sortByRanking() {
 	sort.Sort(sort.Reverse(lps))
 
+	pos := 1
+
 	for i := 0; i < len(lps); i++ {
-		lps[i].Position = i + 1
+		if !lps[i].Active {
+			lps[i].Position = 0
+		} else {
+			lps[i].Position = pos
+			pos++
+		}
 	}
 }

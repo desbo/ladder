@@ -15,7 +15,7 @@ const Table = ({ ladder }: { ladder: Ladder }) =>
     </thead>
 
     <tbody>
-      {ladder.players.map(p => <tr key={p.name}>
+      {ladder.players.filter(p => p.active).map(p => <tr key={p.name}>
         <td>{p.position}</td>
         <td>{p.name}</td>
         <td>{p.wins + p.losses}</td>

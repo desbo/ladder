@@ -14,6 +14,7 @@ import PlayerDropdown from 'components/ladder/PlayerDropdown'
 import Login from 'components/Login';
 
 import API from 'api';
+import InactivePlayers from 'components/ladder/InactivePlayers';
 
 const mapStateToProps = (state: AppState) => ({
   ladder: state.ladders.current,
@@ -128,6 +129,10 @@ class ViewLadder extends React.Component<Props, State> {
 
                 <div className="column is-7">
                   <Table ladder={this.props.ladder} />
+
+                  {this.props.ladder.players.filter(p => !p.active).length > 0 &&
+                    <InactivePlayers ladder={this.props.ladder} />
+                  }
                 </div>
               </div>
             </div>

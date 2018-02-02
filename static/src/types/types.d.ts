@@ -10,7 +10,8 @@ type LadderPlayer = {
   wins: number,
   losses: number,
   rating: number,
-  winRate: number
+  winRate: number,
+  active: boolean
 }
 
 type Ladder = {
