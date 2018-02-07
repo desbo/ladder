@@ -8,7 +8,7 @@ import (
 
 // http://www.glicko.net/glicko/glicko2.pdf
 
-const τ = 0.6
+const τ = 1.0
 
 type result float64
 
