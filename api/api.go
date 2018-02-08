@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
@@ -206,6 +207,42 @@ func inactive(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	json.NewEncoder(w).Encode("OK")
 }
 
+func ratingGraph(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	type graphData map[string]map[time.Time]int
+
+	ctx := appengine.NewContext(r)
+	l, err := GetLadder(ctx, p.ByName("id"))
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	games, err := l.Games(ctx)
+
+	data := make(graphData)
+
+	log.Infof(ctx, "%v", data)
+
+	update := func(d graphData, g *Game, p playerResult) {
+		line, ok := d[p.Player.Name]
+
+		if !ok {
+			line = make(map[time.Time]int)
+		}
+
+		line[g.Date] = p.Player.Rating
+		d[p.Player.Name] = line
+	}
+
+	for _, game := range games {
+		update(data, game, game.Player1)
+		update(data, game, game.Player2)
+	}
+
+	json.NewEncoder(w).Encode(data)
+}
+
 func jsonify(f func(w http.ResponseWriter, r *http.Request, p httprouter.Params)) func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		w.Header().Set("Content-Type", "application/json")
@@ -217,11 +254,16 @@ func init() {
 	router := httprouter.New()
 
 	router.POST("/game", jsonify(submitGame))
+
 	router.POST("/join/:id", jsonify(joinLadder))
+
 	router.GET("/ladder/:id", jsonify(getLadder))
 	router.POST("/ladder", jsonify(createLadder))
 	router.GET("/ladders", jsonify(getLaddersForPlayer))
+
 	router.POST("/player", jsonify(createPlayer))
+
+	router.GET("/graph/:id", jsonify(ratingGraph))
 
 	router.GET("/cron/inactive", inactive)
 

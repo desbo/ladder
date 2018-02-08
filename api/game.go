@@ -20,7 +20,7 @@ type playerResult struct {
 
 type Game struct {
 	ID      string       `json:"id"`
-	Date    time.Time    `json:"submitted"`
+	Date    time.Time    `json:"date"`
 	Player1 playerResult `json:"player1"`
 	Player2 playerResult `json:"player2"`
 }
@@ -61,6 +61,17 @@ func (g *Game) SetRatingChange(p Player, change int) error {
 	}
 
 	return nil
+}
+
+func (l *Ladder) Games(ctx context.Context) ([]*Game, error) {
+	games := make([]*Game, 0)
+	query := datastore.NewQuery(GameKind).Ancestor(l.DatastoreKey(ctx)).Order("Date")
+
+	if _, err := query.GetAll(ctx, &games); err != nil {
+		return nil, err
+	}
+
+	return games, nil
 }
 
 // NewGame creates a new game
