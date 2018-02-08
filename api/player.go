@@ -27,7 +27,7 @@ func NewPlayer(token *auth.Token, name string) *Player {
 	return &Player{
 		FirebaseID:       token.UID,
 		Name:             name,
-		Rating:           1000,
+		Rating:           initialRating,
 		RatingDeviation:  350,
 		RatingVolatility: 0.06,
 		SignupDate:       time.Now(),

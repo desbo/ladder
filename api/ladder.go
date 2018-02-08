@@ -29,7 +29,7 @@ type LaddersForPlayer struct {
 	Playing []*Ladder `json:"playing"`
 }
 
-const initialRating = 1000
+const initialRating = 1500
 
 // NewLadder creates a new ladder
 func NewLadder(ctx context.Context, owner *Player) (*Ladder, error) {
