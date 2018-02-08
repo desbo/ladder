@@ -205,19 +205,6 @@ func (l *Ladder) updateWinRates() {
 	}
 }
 
-// Games registered against this ladder
-func (l *Ladder) Games(ctx context.Context) ([]*Game, error) {
-	games := make([]*Game, 0)
-	query := datastore.NewQuery(GameKind).Ancestor(l.DatastoreKey(ctx))
-	_, err := query.GetAll(ctx, &games)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return games, nil
-}
-
 func (l *Ladder) DatastoreKey(ctx context.Context) *datastore.Key {
 	return datastore.NewKey(ctx, LadderKind, l.ID, 0, nil)
 }
