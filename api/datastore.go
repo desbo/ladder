@@ -15,6 +15,7 @@ const (
 	LadderKind = "Ladder"
 	PlayerKind = "Player"
 	GameKind   = "Game"
+	UserKind   = "User"
 )
 
 // DatastoreEntity is any entity that can exist in GAE datastore

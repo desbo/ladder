@@ -12,7 +12,7 @@ import (
 const LadderKey string = "test"
 const LadderSize = 2
 
-var TestPlayer *Player
+var TestUser *User
 
 // TestLadders represents an end-to-end test of:
 // - creating a ladder
@@ -37,12 +37,9 @@ func TestLadders(t *testing.T) {
 }
 
 func CreateLadderTest(ctx context.Context, t *testing.T) {
-	owner := &Player{
-		FirebaseID:       "owner",
-		Name:             "owner",
-		Rating:           1000,
-		RatingDeviation:  350,
-		RatingVolatility: 0.06,
+	owner := &User{
+		FirebaseID: "owner",
+		Name:       "owner",
 	}
 
 	_, err := owner.Save(ctx)
@@ -83,32 +80,29 @@ func AddPlayersTest(ctx context.Context, ladderSize int, t *testing.T) {
 	for i := 0; i < ladderSize; i++ {
 		name := fmt.Sprintf("Player %d", i)
 
-		player := &Player{
-			FirebaseID:       fmt.Sprintf("%d", i),
-			Name:             name,
-			Rating:           1000,
-			RatingDeviation:  350,
-			RatingVolatility: 0.06,
+		user := &User{
+			FirebaseID: fmt.Sprintf("%d", i),
+			Name:       name,
 		}
 
-		_, err := player.Save(ctx)
+		_, err := user.Save(ctx)
 
 		if err != nil {
-			t.Fatalf("error saving player %v: %s", player, err.Error())
+			t.Fatalf("error saving user %v: %s", user, err.Error())
 		}
 
-		err = l.AddPlayer(ctx, player)
+		err = l.AddUser(ctx, user)
 
 		if err != nil {
-			t.Fatalf("error after adding player %v: %s", player, err.Error())
+			t.Fatalf("error after adding user %v: %s", user, err.Error())
 		}
 
-		if !l.ContainsPlayer(ctx, player) {
-			t.Fatalf("ladder was not reported to contain player %v after adding", player)
+		if !l.ContainsUser(ctx, user) {
+			t.Fatalf("ladder was not reported to contain user %v after adding", user)
 		}
 
-		if TestPlayer == nil {
-			TestPlayer = player
+		if TestUser == nil {
+			TestUser = user
 		}
 	}
 
@@ -125,23 +119,23 @@ func AddPlayersTest(ctx context.Context, ladderSize int, t *testing.T) {
 }
 
 func GetLaddersTest(ctx context.Context, t *testing.T) {
-	owner, err := GetPlayer(ctx, "owner")
+	owner, err := GetUser(ctx, "owner")
 
 	if err != nil {
 		t.Fatalf("could not load ladder owner")
 	}
 
-	ls, err := GetLaddersForPlayer(ctx, TestPlayer)
+	ls, err := GetLaddersForUser(ctx, TestUser)
 
 	if err != nil {
 		t.Fatalf("error getting player ladders: %s", err.Error())
 	}
 
 	if len(ls.Playing) != 1 {
-		t.Fatalf("incorrect number of playing ladders for %s (expected %d, got %d)", TestPlayer, 1, len(ls.Playing))
+		t.Fatalf("incorrect number of playing ladders for %s (expected %d, got %d)", TestUser, 1, len(ls.Playing))
 	}
 
-	ls, err = GetLaddersForPlayer(ctx, owner)
+	ls, err = GetLaddersForUser(ctx, owner)
 
 	if len(ls.Owned) != 1 {
 		t.Fatalf("incorrect number of playing ladders for %s (expected %d, got %d)", owner, 1, len(ls.Owned))
@@ -156,10 +150,10 @@ func SubmitGameTest(ctx context.Context, t *testing.T) {
 		t.Fatalf("could not get ladder with ID %s: %s", LadderKey, err.Error())
 	}
 
-	players := make([]*Player, len(l.Players))
+	users := make([]*User, len(l.Players))
 
 	for i := 0; i < 2; i++ {
-		players[i], err = PlayerFromLadderPlayer(ctx, l.Players[i])
+		users[i], err = UserFromPlayer(ctx, l.Players[i])
 
 		if err != nil {
 			t.Fatalf("could not create Player from LadderPlayer %v: %s", l.Players[i], err.Error())
@@ -167,8 +161,8 @@ func SubmitGameTest(ctx context.Context, t *testing.T) {
 	}
 
 	// match should result in a swap
-	winner := players[1]
-	loser := players[0]
+	winner := users[1]
+	loser := users[0]
 	game := NewGame(winner, loser, 11, 5)
 
 	_, err = l.LogGame(ctx, game)
@@ -199,21 +193,9 @@ func SubmitGameTest(ctx context.Context, t *testing.T) {
 		t.Fatalf("wrong number of players in ladder after game: got %d, expected %d", len(l.Players), LadderSize)
 	}
 
-	winner, err = GetPlayerByEncodedKey(ctx, winner.DatastoreKey(ctx).Encode())
+	winner, err = GetUserByEncodedKey(ctx, winner.DatastoreKey(ctx).Encode())
 
 	if err != nil {
 		t.Fatal(err)
-	}
-
-	// Player ratings in a game should be what they were at the start of the game
-	// (before rating calculation based on the Game's result)
-	if game.Player1.Player.Rating != 1000 {
-		t.Fatalf("Player rating in game was incorrectly updated")
-	}
-
-	newRating := game.Player1.Player.Rating + game.Player1.RatingChange
-
-	if winner.Rating != newRating {
-		t.Fatalf("Player's rating was not updated: expected %d, got %d", newRating, winner.Rating)
 	}
 }

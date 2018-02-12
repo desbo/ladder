@@ -9,9 +9,9 @@ import (
 	"google.golang.org/appengine/datastore"
 )
 
-type playerResult struct {
-	Player Player `json:"player"`
-	Score  int    `json:"score"`
+type PlayerResult struct {
+	User  User `json:"user"`
+	Score int  `json:"score"`
 
 	// RatingChange is how much this game altered the player's rating.
 	// Note that the ratings included in Player here are the ones before this alteration.
@@ -21,24 +21,24 @@ type playerResult struct {
 type Game struct {
 	ID      string       `json:"id"`
 	Date    time.Time    `json:"date"`
-	Player1 playerResult `json:"player1"`
-	Player2 playerResult `json:"player2"`
+	Player1 PlayerResult `json:"player1"`
+	Player2 PlayerResult `json:"player2"`
 }
 
-func newPlayerResult(p *Player, score int) playerResult {
-	return playerResult{
-		Player: *p,
-		Score:  score,
+func NewPlayerResult(u *User, score int) PlayerResult {
+	return PlayerResult{
+		User:  *u,
+		Score: score,
 	}
 }
 
 // WinnerAndLoser returns the winner and loser of this match, respectively
-func (g *Game) WinnerAndLoser() (Player, Player) {
+func (g *Game) WinnerAndLoser() (User, User) {
 	if g.Player1.Score > g.Player2.Score {
-		return g.Player1.Player, g.Player2.Player
+		return g.Player1.User, g.Player2.User
 	}
 
-	return g.Player2.Player, g.Player1.Player
+	return g.Player2.User, g.Player1.User
 }
 
 func (g *Game) Save(ctx context.Context, ladder *Ladder) error {
@@ -51,13 +51,13 @@ func (g *Game) Save(ctx context.Context, ladder *Ladder) error {
 	return nil
 }
 
-func (g *Game) SetRatingChange(p Player, change int) error {
-	if g.Player1.Player.Equals(p) {
+func (g *Game) SetRatingChange(u User, change int) error {
+	if g.Player1.User.Equals(u) {
 		g.Player1.RatingChange = change
-	} else if g.Player2.Player.Equals(p) {
+	} else if g.Player2.User.Equals(u) {
 		g.Player2.RatingChange = change
 	} else {
-		return fmt.Errorf("player %s not in game %s", p.FirebaseID, g.ID)
+		return fmt.Errorf("user %s not in game %s", u.FirebaseID, g.ID)
 	}
 
 	return nil
@@ -75,11 +75,11 @@ func (l *Ladder) Games(ctx context.Context) ([]*Game, error) {
 }
 
 // NewGame creates a new game
-func NewGame(p1 *Player, p2 *Player, p1score int, p2score int) *Game {
+func NewGame(u1 *User, u2 *User, u1score int, u2score int) *Game {
 	return &Game{
 		ID:      xid.New().String(),
 		Date:    time.Now(),
-		Player1: newPlayerResult(p1, p1score),
-		Player2: newPlayerResult(p2, p2score),
+		Player1: NewPlayerResult(u1, u1score),
+		Player2: NewPlayerResult(u2, u2score),
 	}
 }
