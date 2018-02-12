@@ -18,13 +18,13 @@ type Ladder struct {
 	ID               string         `json:"id"`
 	Created          time.Time      `json:"created"`
 	OwnerKey         *datastore.Key `json:"ownerKey"`
-	Players          LadderPlayers  `json:"players"`
+	Players          Players        `json:"players"`
 	InactivityPeriod time.Duration  `json:"-"`
 	Active           bool           `json:"active"`
 }
 
-// LaddersForPlayer represents the ladders a player either owns or is playing in
-type LaddersForPlayer struct {
+// LaddersForUser represents the ladders a user either owns or is playing in
+type LaddersForUser struct {
 	Owned   []*Ladder `json:"owned"`
 	Playing []*Ladder `json:"playing"`
 }
@@ -32,17 +32,17 @@ type LaddersForPlayer struct {
 const initialRating = 1500
 
 // NewLadder creates a new ladder
-func NewLadder(ctx context.Context, owner *Player) (*Ladder, error) {
+func NewLadder(ctx context.Context, owner *User) (*Ladder, error) {
 	l := &Ladder{
 		ID:               xid.New().String(),
 		Created:          time.Now(),
 		Active:           true,
-		Players:          make([]LadderPlayer, 0),
+		Players:          make(Players, 0),
 		OwnerKey:         owner.DatastoreKey(ctx),
 		InactivityPeriod: 7 * 24 * time.Hour, // TODO: Add to UI
 	}
 
-	if err := l.AddPlayer(ctx, owner); err != nil {
+	if err := l.AddUser(ctx, owner); err != nil {
 		return nil, err
 	}
 
@@ -62,11 +62,11 @@ func GetLadder(ctx context.Context, id string) (*Ladder, error) {
 	return l, nil
 }
 
-func GetLaddersForPlayer(ctx context.Context, player *Player) (*LaddersForPlayer, error) {
+func GetLaddersForUser(ctx context.Context, user *User) (*LaddersForUser, error) {
 	owned := make([]*Ladder, 0)
 	playing := make([]*Ladder, 0)
 
-	key := player.DatastoreKey(ctx)
+	key := user.DatastoreKey(ctx)
 
 	_, err := datastore.NewQuery(LadderKind).Filter("OwnerKey = ", key).GetAll(ctx, &owned)
 
@@ -75,7 +75,7 @@ func GetLaddersForPlayer(ctx context.Context, player *Player) (*LaddersForPlayer
 		return nil, err
 	}
 
-	_, err = datastore.NewQuery(LadderKind).Filter("Players.Name = ", player.Name).GetAll(ctx, &playing)
+	_, err = datastore.NewQuery(LadderKind).Filter("Players.Name = ", user.Name).GetAll(ctx, &playing)
 
 	if err != nil {
 		log.Errorf(ctx, "error querying playing ladders for %v: %v", key, err)
@@ -85,19 +85,19 @@ func GetLaddersForPlayer(ctx context.Context, player *Player) (*LaddersForPlayer
 	// Set empty players to empty array, ensures `[]` rather than `null` in JSON response
 	for _, ladder := range append(owned, playing...) {
 		if ladder.Players == nil {
-			ladder.Players = make([]LadderPlayer, 0)
+			ladder.Players = make(Players, 0)
 		}
 	}
 
-	return &LaddersForPlayer{
+	return &LaddersForUser{
 		Owned:   owned,
 		Playing: playing,
 	}, nil
 }
 
-func (l *Ladder) ContainsPlayer(ctx context.Context, p *Player) bool {
+func (l *Ladder) ContainsUser(ctx context.Context, u *User) bool {
 	for _, q := range l.Players {
-		if p.DatastoreKey(ctx).String() == q.Key.String() {
+		if u.DatastoreKey(ctx).String() == q.Key.String() {
 			return true
 		}
 	}
@@ -105,18 +105,18 @@ func (l *Ladder) ContainsPlayer(ctx context.Context, p *Player) bool {
 	return false
 }
 
-func (l *Ladder) AddPlayer(ctx context.Context, p *Player) error {
-	_, err := GetPlayer(ctx, p.FirebaseID)
+func (l *Ladder) AddUser(ctx context.Context, u *User) error {
+	_, err := GetUser(ctx, u.FirebaseID)
 
 	if err != nil {
-		return fmt.Errorf("Error loading Player %s from DB: %s. Will not add to ladder", p.FirebaseID, err.Error())
+		return fmt.Errorf("Error loading Player %s from DB: %s. Will not add to ladder", u.FirebaseID, err.Error())
 	}
 
-	if l.ContainsPlayer(ctx, p) {
-		return fmt.Errorf("Ladder %s (ID: %s) already contains player with ID %s", l.Name, l.ID, p.FirebaseID)
+	if l.ContainsUser(ctx, u) {
+		return fmt.Errorf("Ladder %s (ID: %s) already contains player with ID %s", l.Name, l.ID, u.FirebaseID)
 	}
 
-	lp := NewLadderPlayer(ctx, p, len(l.Players)+1)
+	lp := NewPlayer(ctx, u, len(l.Players)+1)
 	l.Players = append(l.Players, lp)
 
 	return nil
@@ -128,25 +128,25 @@ func (l *Ladder) AddPlayer(ctx context.Context, p *Player) error {
 // - if the winner was previously ranked below the loser, swaps the player positions
 // - writes the ladder to the DB with the new results
 func (l *Ladder) LogGame(ctx context.Context, g *Game) (*Game, error) {
-	var winner, loser *LadderPlayer // winner and loser indexes
-	winnerP, loserP := g.WinnerAndLoser()
+	var winner, loser *Player // winner and loser indexes
+	winnerUser, loserUser := g.WinnerAndLoser()
 
 	for i := 0; i < len(l.Players); i++ {
 		p := l.Players[i]
 
-		if p.Key.Equal(winnerP.DatastoreKey(ctx)) {
+		if p.Key.Equal(winnerUser.DatastoreKey(ctx)) {
 			winner = &l.Players[i]
-		} else if p.Key.Equal(loserP.DatastoreKey(ctx)) {
+		} else if p.Key.Equal(loserUser.DatastoreKey(ctx)) {
 			loser = &l.Players[i]
 		}
 	}
 
 	if winner == nil {
-		return nil, fmt.Errorf("could not locate game winner %s", winnerP.DatastoreKey(ctx))
+		return nil, fmt.Errorf("could not locate game winner %s", winnerUser.DatastoreKey(ctx))
 	}
 
 	if loser == nil {
-		return nil, fmt.Errorf("could not locate game loser %s", loserP.DatastoreKey(ctx))
+		return nil, fmt.Errorf("could not locate game loser %s", loserUser.DatastoreKey(ctx))
 	}
 
 	// 1. rank the winner and loser and write the updated Players to the DB
@@ -155,21 +155,13 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) (*Game, error) {
 	// 4. update the ladder statistics for both LadderPlayers and write the
 	//    updated ladder to the DB
 	err := datastore.RunInTransaction(ctx, func(ctx context.Context) error {
-		wa, la := rank(ctx, &winnerP, &loserP)
+		wa, la := rank(ctx, winner, loser)
 
-		if _, err := winnerP.Save(ctx); err != nil {
+		if err := g.SetRatingChange(winnerUser, wa); err != nil {
 			return err
 		}
 
-		if _, err := loserP.Save(ctx); err != nil {
-			return err
-		}
-
-		if err := g.SetRatingChange(winnerP, wa); err != nil {
-			return err
-		}
-
-		if err := g.SetRatingChange(loserP, la); err != nil {
+		if err := g.SetRatingChange(loserUser, la); err != nil {
 			return err
 		}
 
@@ -179,11 +171,8 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) (*Game, error) {
 
 		winner.Active = true
 		loser.Active = true
-
 		winner.Wins = winner.Wins + 1
 		loser.Losses = loser.Losses + 1
-		winner.Rating = winner.Rating + wa
-		loser.Rating = loser.Rating + la
 
 		if _, err := l.Save(ctx); err != nil {
 			return err

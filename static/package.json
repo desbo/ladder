@@ -7,11 +7,13 @@
     "dev": "webpack-dev-server"
   },
   "dependencies": {
+    "@types/chartjs": "^0.0.31",
     "@types/react": "^16.0.25",
     "@types/react-dom": "^16.0.3",
     "@types/react-redux": "^5.0.13",
     "@types/react-router-dom": "^4.2.3",
     "bulma": "^0.6.1",
+    "chart.js": "^2.7.1",
     "firebase": "^4.6.2",
     "react": "^16.1.1",
     "react-dom": "^16.1.1",

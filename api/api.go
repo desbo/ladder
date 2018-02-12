@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
@@ -39,14 +38,14 @@ func getLaddersForPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Pa
 		return
 	}
 
-	player, err := GetPlayerFromToken(ctx, token)
+	user, err := GetUserFromToken(ctx, token)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	ladders, err := GetLaddersForPlayer(ctx, player)
+	ladders, err := GetLaddersForUser(ctx, user)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -59,14 +58,14 @@ func getLaddersForPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Pa
 
 func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	ctx := appengine.NewContext(r)
-	player, err := PlayerFromRequest(r)
+	user, err := UserFromRequest(r)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	ladder, err := NewLadder(ctx, player)
+	ladder, err := NewLadder(ctx, user)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -87,7 +86,7 @@ func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	save(ladder, w, r)
 }
 
-func createPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func createUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	ctx := appengine.NewContext(r)
 	token, err := initAndVerifyToken(ctx, r)
 
@@ -109,12 +108,12 @@ func createPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	save(NewPlayer(token, form.Name), w, r)
+	save(NewUser(token, form.Name), w, r)
 }
 
 func joinLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	ctx := appengine.NewContext(r)
-	player, err := PlayerFromRequest(r)
+	user, err := UserFromRequest(r)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -128,7 +127,7 @@ func joinLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	if err = lad.AddPlayer(ctx, player); err != nil {
+	if err = lad.AddUser(ctx, user); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -143,7 +142,7 @@ func joinLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 func submitGame(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	ctx := appengine.NewContext(r)
-	userPlayer, err := PlayerFromRequest(r)
+	user, err := UserFromRequest(r)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -170,7 +169,7 @@ func submitGame(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	opponent, err := GetPlayerByEncodedKey(ctx, form.OpponentKey)
+	opponent, err := GetUserByEncodedKey(ctx, form.OpponentKey)
 
 	if err != nil {
 		log.Errorf(ctx, "error getting ladder %s: %s", form.LadderID, err.Error())
@@ -178,7 +177,7 @@ func submitGame(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	game := NewGame(userPlayer, opponent, form.MyScore, form.TheirScore)
+	game := NewGame(user, opponent, form.MyScore, form.TheirScore)
 	ladder, err := GetLadder(ctx, form.LadderID)
 
 	if err != nil {
@@ -207,42 +206,6 @@ func inactive(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	json.NewEncoder(w).Encode("OK")
 }
 
-func ratingGraph(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	type graphData map[string]map[time.Time]int
-
-	ctx := appengine.NewContext(r)
-	l, err := GetLadder(ctx, p.ByName("id"))
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	games, err := l.Games(ctx)
-
-	data := make(graphData)
-
-	log.Infof(ctx, "%v", data)
-
-	update := func(d graphData, g *Game, p playerResult) {
-		line, ok := d[p.Player.Name]
-
-		if !ok {
-			line = make(map[time.Time]int)
-		}
-
-		line[g.Date] = p.Player.Rating
-		d[p.Player.Name] = line
-	}
-
-	for _, game := range games {
-		update(data, game, game.Player1)
-		update(data, game, game.Player2)
-	}
-
-	json.NewEncoder(w).Encode(data)
-}
-
 func jsonify(f func(w http.ResponseWriter, r *http.Request, p httprouter.Params)) func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		w.Header().Set("Content-Type", "application/json")
@@ -261,9 +224,7 @@ func init() {
 	router.POST("/ladder", jsonify(createLadder))
 	router.GET("/ladders", jsonify(getLaddersForPlayer))
 
-	router.POST("/player", jsonify(createPlayer))
-
-	router.GET("/graph/:id", jsonify(ratingGraph))
+	router.POST("/player", jsonify(createUser))
 
 	router.GET("/cron/inactive", inactive)
 
