@@ -10,7 +10,16 @@ if [ $NUM_VERSIONS -ge $(($MAX_VERSIONS - 2)) ]; then
   gcloud app versions list \
     --project tt-ladder \
     --sort-by=LAST_DEPLOYED \
-    --limit 2 \
+    --limit 1 \
+    --service default \
+    --format="value(version.id)" |
+    xargs gcloud app versions delete --quiet --project tt-ladder
+  
+  gcloud app versions list \
+    --project tt-ladder \
+    --sort-by=LAST_DEPLOYED \
+    --limit 1 \
+    --service api \
     --format="value(version.id)" |
     xargs gcloud app versions delete --quiet --project tt-ladder
 

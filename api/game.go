@@ -14,7 +14,6 @@ type PlayerResult struct {
 	Score int  `json:"score"`
 
 	// RatingChange is how much this game altered the player's rating.
-	// Note that the ratings included in Player here are the ones before this alteration.
 	RatingChange int `json:"ratingChange"`
 }
 
