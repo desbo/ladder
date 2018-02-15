@@ -38,14 +38,14 @@ func getLaddersForPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Pa
 		return
 	}
 
-	player, err := GetPlayerFromToken(ctx, token)
+	user, err := GetUserFromToken(ctx, token)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	ladders, err := GetLaddersForPlayer(ctx, player)
+	ladders, err := GetLaddersForUser(ctx, user)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -58,14 +58,14 @@ func getLaddersForPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Pa
 
 func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	ctx := appengine.NewContext(r)
-	player, err := PlayerFromRequest(r)
+	user, err := UserFromRequest(r)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	ladder, err := NewLadder(ctx, player)
+	ladder, err := NewLadder(ctx, user)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -86,7 +86,7 @@ func createLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	save(ladder, w, r)
 }
 
-func createPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func createUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	ctx := appengine.NewContext(r)
 	token, err := initAndVerifyToken(ctx, r)
 
@@ -108,12 +108,12 @@ func createPlayer(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	save(NewPlayer(token, form.Name), w, r)
+	save(NewUser(token, form.Name), w, r)
 }
 
 func joinLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	ctx := appengine.NewContext(r)
-	player, err := PlayerFromRequest(r)
+	user, err := UserFromRequest(r)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -127,7 +127,7 @@ func joinLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	if err = lad.AddPlayer(ctx, player); err != nil {
+	if err = lad.AddUser(ctx, user); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -142,7 +142,7 @@ func joinLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 
 func submitGame(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	ctx := appengine.NewContext(r)
-	userPlayer, err := PlayerFromRequest(r)
+	user, err := UserFromRequest(r)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -169,7 +169,7 @@ func submitGame(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	opponent, err := GetPlayerByEncodedKey(ctx, form.OpponentKey)
+	opponent, err := GetUserByEncodedKey(ctx, form.OpponentKey)
 
 	if err != nil {
 		log.Errorf(ctx, "error getting ladder %s: %s", form.LadderID, err.Error())
@@ -177,7 +177,7 @@ func submitGame(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	game := NewGame(userPlayer, opponent, form.MyScore, form.TheirScore)
+	game := NewGame(user, opponent, form.MyScore, form.TheirScore)
 	ladder, err := GetLadder(ctx, form.LadderID)
 
 	if err != nil {
@@ -195,6 +195,27 @@ func submitGame(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	log.Infof(ctx, "logged game %s", game.ID)
 
 	json.NewEncoder(w).Encode(game)
+}
+
+func chart(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	ctx := appengine.NewContext(r)
+	l, err := GetLadder(ctx, p.ByName("id"))
+
+	if err != nil {
+		log.Errorf(ctx, "error generating chart (could not get ladder %s: %s)", p.ByName("id"), err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	games, err := l.Games(ctx)
+
+	if err != nil {
+		log.Errorf(ctx, "error generating chart (could not get games for ladder %s: %s)", p.ByName("id"), err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	json.NewEncoder(w).Encode(BuildChart(games))
 }
 
 func inactive(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -217,11 +238,16 @@ func init() {
 	router := httprouter.New()
 
 	router.POST("/game", jsonify(submitGame))
+
 	router.POST("/join/:id", jsonify(joinLadder))
+
 	router.GET("/ladder/:id", jsonify(getLadder))
 	router.POST("/ladder", jsonify(createLadder))
 	router.GET("/ladders", jsonify(getLaddersForPlayer))
-	router.POST("/player", jsonify(createPlayer))
+
+	router.POST("/player", jsonify(createUser))
+
+	router.GET("/chart/:id", jsonify(chart))
 
 	router.GET("/cron/inactive", inactive)
 

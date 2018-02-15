@@ -2,4 +2,4 @@ cron:
 - description: check for inactive players
   url: /cron/inactive
   target: api
-  schedule: every hour 
+  schedule: every 6 hours 
