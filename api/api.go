@@ -197,6 +197,27 @@ func submitGame(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	json.NewEncoder(w).Encode(game)
 }
 
+func chart(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	ctx := appengine.NewContext(r)
+	l, err := GetLadder(ctx, p.ByName("id"))
+
+	if err != nil {
+		log.Errorf(ctx, "error generating chart (could not get ladder %s: %s)", p.ByName("id"), err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	games, err := l.Games(ctx)
+
+	if err != nil {
+		log.Errorf(ctx, "error generating chart (could not get games for ladder %s: %s)", p.ByName("id"), err.Error())
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	json.NewEncoder(w).Encode(BuildChart(games))
+}
+
 func inactive(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	if err := CheckInactivity(appengine.NewContext(r)); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -225,6 +246,8 @@ func init() {
 	router.GET("/ladders", jsonify(getLaddersForPlayer))
 
 	router.POST("/player", jsonify(createUser))
+
+	router.GET("/chart/:id", jsonify(chart))
 
 	router.GET("/cron/inactive", inactive)
 
