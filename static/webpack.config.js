@@ -1,17 +1,20 @@
 /* eslint-env node */
 const webpack = require('webpack');
 const path = require('path');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
-
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 const prod = process.env.NODE_ENV === 'production';
 
 module.exports = {
-  entry: './src/app.tsx',
+  entry: {
+    app: './src/app.tsx',
+    css: './scss/main.scss'
+  },
 
   output: {
     path: path.resolve(__dirname, 'public'),
-    filename: 'app.js'
+    filename: '[name].js'
   },
 
   devtool: 'inline-source-map',
@@ -23,7 +26,7 @@ module.exports = {
   },
 
   resolve: {
-    modules: [path.resolve(__dirname, 'src'), 'node_modules'],
+    modules: [path.resolve(__dirname, 'src'), path.resolve(__dirname, 'scss'), 'node_modules'],
     extensions: ['.ts', '.tsx', '.js', '.jsx']
   },
 
@@ -38,6 +41,20 @@ module.exports = {
         enforce: 'pre', 
         test: /\.js$/, 
         loader: 'source-map-loader' 
+      },
+
+      {
+        test: /\.scss$/,
+        use: ExtractTextPlugin.extract({
+          fallback: 'style-loader',
+          use: [
+            {
+              loader: 'css-loader',
+              options: { minimize: prod }
+            }, 
+            'sass-loader'
+          ]
+        })
       }
     ]
   },
@@ -54,6 +71,8 @@ module.exports = {
 
     prod ? new UglifyJsPlugin({
       parallel: true
-    }) : () => null 
+    }) : () => null,
+
+    new ExtractTextPlugin('main.css')
   ]
 };

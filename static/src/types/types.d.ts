@@ -10,6 +10,7 @@ type LadderPlayer = {
   wins: number,
   losses: number,
   rating: number,
+  lastRatingChange: number,
   winRate: number,
   active: boolean
 }
@@ -100,3 +101,5 @@ type AppError = {
 }
 
 type Maybe<T> = T | undefined
+
+declare module 'google-palette';

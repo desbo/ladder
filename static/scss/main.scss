@@ -1,0 +1,13 @@
+.level.is-mobile .level-item {
+  margin-right: 0;
+}
+
+.reverse-row-order {
+  flex-direction: row-reverse;
+}
+
+.hero.is-light .tabs.is-boxed li.is-active a {
+  color: #363636;
+  background: #fff;
+  border: none;
+}

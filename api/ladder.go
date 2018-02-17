@@ -173,6 +173,8 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) (*Game, error) {
 		loser.Active = true
 		winner.Wins = winner.Wins + 1
 		loser.Losses = loser.Losses + 1
+		winner.LastRatingChange = wa
+		loser.LastRatingChange = la
 
 		if _, err := l.Save(ctx); err != nil {
 			return err

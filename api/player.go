@@ -20,6 +20,7 @@ type Player struct {
 	Rating           int            `json:"rating"`
 	RatingDeviation  float64        `json:"-"`
 	RatingVolatility float64        `json:"-"`
+	LastRatingChange int            `json:"lastRatingChange"`
 	WinRate          float32        `json:"winRate"`
 	JoinDate         time.Time      `json:"joinDate"`
 	Active           bool           `json:"active"`
