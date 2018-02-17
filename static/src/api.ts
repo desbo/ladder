@@ -57,6 +57,11 @@ class API {
       })
     })
   }
+
+  getChart(id: string): Promise<ChartData> {
+    return API.fetchWithToken(`${this.url}/chart/${id}`)
+  }
+
 }
 
 export default new API(API_URL);

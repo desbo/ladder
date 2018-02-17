@@ -9,6 +9,7 @@ import { Actions } from 'actions/actions';
 import Main from 'components/Main';
 import Navbar from 'components/nav/Navbar';
 import ViewLadder from 'components/ViewLadder';
+import ViewChart from 'components/ViewChart';
 import Modal from 'components/util/Modal';
 
 const mapStateToProps = (state: AppState) => ({
@@ -46,6 +47,7 @@ const Router = ({ username, modal, signOut, closeModal }: { username: string, mo
         <Switch>
           <Route exact path="/" component={Main} />
           <Route path="/ladder/:id" component={ViewLadder} />
+          <Route path="/chart/:id" component={ViewChart} />
         </Switch>
       </div>
     </BrowserRouter>

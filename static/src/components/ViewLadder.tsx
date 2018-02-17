@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { RouteProps, match, Redirect } from 'react-router';
+import { match, Redirect } from 'react-router';
 import { ReactNode } from 'react';
 
 import { Actions, setCurrentLadder, selectOpponent, clearOpponent } from 'actions/actions';
@@ -8,6 +8,7 @@ import { Actions, setCurrentLadder, selectOpponent, clearOpponent } from 'action
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 
+import TitleBar from 'components/TitleBar'
 import Table from 'components/ladder/Table'
 import SubmitGame from 'components/ladder/SubmitGame'
 import PlayerDropdown from 'components/ladder/PlayerDropdown'
@@ -53,7 +54,9 @@ class ViewLadder extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    this.fetch()
+    if (!this.props.ladder) {
+      this.fetch()
+    }
   }
 
   fetch() {
@@ -74,13 +77,7 @@ class ViewLadder extends React.Component<Props, State> {
     if (this.props.ladder) {
       return (
         <div>
-          <section className="hero is-light is-small">
-            <div className="hero-body">
-              <div className="container">
-                <h1 className="subtitle is-4">{this.props.ladder.name}</h1>
-              </div>
-            </div>
-          </section>
+          <TitleBar ladder={this.props.ladder} />
 
           <section className="section">
             <div className="container">
@@ -142,7 +139,7 @@ class ViewLadder extends React.Component<Props, State> {
     } else if (this.state.failed) {
       return <Redirect to="/" />
     } else {
-      return <div>getting ladder...</div>
+      return <div className="container">getting ladder...</div>
     }
   }
 }
