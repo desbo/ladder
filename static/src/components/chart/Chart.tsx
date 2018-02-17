@@ -3,26 +3,13 @@ import { Ref } from 'react';
 
 import * as palette from 'google-palette';
 
+import { summarise } from 'util/chart';
+
 import { Chart } from 'chart.js';
 
 type Props = { 
   data: ChartData
 }
-
-// reduce to 1 rating per player per day
-const summarise = (data: ChartData): ChartData =>
-  Object.keys(data).reduce((cd, name) => {
-    const sorted = data[name]
-      .sort((a, b) => new Date(a.x).getTime() - new Date(b.x).getTime())
-      .reverse()
-
-    cd[name] = sorted.reduce((ps: Array<Point>, point: Point): Array<Point> => {
-      const dayAlreadySet = ps.some(p => new Date(p.x).toDateString === new Date(point.x).toDateString)
-      return dayAlreadySet ? ps : ps.concat(point)
-    }, []);
-
-    return cd;
-  }, data);
 
 export default class ChartComponent extends React.Component<Props> {
   canvasElement: null | HTMLCanvasElement
