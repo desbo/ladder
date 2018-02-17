@@ -12,26 +12,17 @@ type Props = {
 // reduce to 1 rating per player per day
 const summarise = (data: ChartData): ChartData =>
   Object.keys(data).reduce((cd, name) => {
-    const newData: ChartData = Object.assign(cd, {});
     const sorted = data[name]
       .sort((a, b) => new Date(a.x).getTime() - new Date(b.x).getTime())
       .reverse()
 
-<<<<<<< HEAD
-    newData[name] = sorted.reduce((ps: Array<Point>, point: Point): Array<Point> => {
+    cd[name] = sorted.reduce((ps: Array<Point>, point: Point): Array<Point> => {
       const dayAlreadySet = ps.some(p => new Date(p.x).toDateString === new Date(point.x).toDateString)
       return dayAlreadySet ? ps : ps.concat(point)
-=======
-    newData[name] = sorted.reduce((newData: Array<Point>, point: Point): Array<Point> => {
-      const day = new Date(point.x);
-      const dayAlreadySet = newData.find(p => day.toDateString === new Date(p.x).toDateString)
-
-      return dayAlreadySet ? newData : newData.concat(point)
->>>>>>> squash charts to 1 rating per day
     }, []);
 
-    return newData;
-  }, {} as ChartData);
+    return cd;
+  }, data);
 
 export default class ChartComponent extends React.Component<Props> {
   canvasElement: null | HTMLCanvasElement
