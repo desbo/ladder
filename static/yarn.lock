@@ -514,9 +514,9 @@
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/@firebase/webchannel-wrapper/-/webchannel-wrapper-0.2.4.tgz#ec8438b780baff09254076efe345f30fdb41243e"
 
-"@types/chartjs@^0.0.31":
-  version "0.0.31"
-  resolved "https://registry.yarnpkg.com/@types/chartjs/-/chartjs-0.0.31.tgz#b16a687eaad3ea3e5cd3e961aee5a28e47b57949"
+"@types/chart.js@^2.7.7":
+  version "2.7.7"
+  resolved "https://registry.yarnpkg.com/@types/chart.js/-/chart.js-2.7.7.tgz#6127a09149437c22f86eb151ad9e9b1430ee6928"
 
 "@types/history@*":
   version "4.6.2"
@@ -2287,6 +2287,10 @@ globby@^6.1.0:
     object-assign "^4.0.1"
     pify "^2.0.0"
     pinkie-promise "^2.0.0"
+
+google-palette@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/google-palette/-/google-palette-1.0.0.tgz#9da061ee881c79688b25ccacc36bf846deecc4c3"
 
 graceful-fs@^4.1.11, graceful-fs@^4.1.2, graceful-fs@^4.1.4:
   version "4.1.11"

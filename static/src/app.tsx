@@ -15,6 +15,7 @@ import userReducer from 'reducers/user';
 import viewReducer from 'reducers/view';
 import ladderReducer from 'reducers/ladder';
 import modalReducer from 'reducers/modal';
+import chartReducer from 'reducers/chart';
 
 const firebaseApp = auth.initFirebase();
 
@@ -27,7 +28,8 @@ const store: Store<AppState> = createStore(
     user: userReducer,
     view: viewReducer,
     ladders: ladderReducer,
-    modal: modalReducer
+    modal: modalReducer,
+    chart: chartReducer
   }),
   devToolEnhancer
 );

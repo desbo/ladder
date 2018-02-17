@@ -10,6 +10,7 @@ export enum Actions {
 
   SET_PLAYER_LADDERS = 'SET_PLAYER_LADDERS',
   SET_CURRENT_LADDER = 'SET_CURRENT_LADDER',
+  SET_CHART_DATA = 'SET_CHART_DATA',
 
   SELECT_OPPONENT = 'SELECT_OPPONENT',
 
@@ -42,6 +43,13 @@ export function setCurrentLadder(ladder: Ladder) {
   return {
     type: Actions.SET_CURRENT_LADDER,
     ladder: ladder
+  }
+}
+
+export function setChartData(data: ChartData) {
+  return {
+    type: Actions.SET_CHART_DATA,
+    data: data
   }
 }
 

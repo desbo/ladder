@@ -38,6 +38,13 @@ type Game = {
   player2: PlayerResult
 }
 
+type ChartData = {
+  [name: string]: [{
+    x: string,
+    y: number
+  }]
+}
+
 /**
  * overall state for the app 
  * (built by combineReducers)
@@ -46,7 +53,8 @@ type AppState = {
   user: UserState,
   view: ViewState,
   ladders: LadderState,
-  modal: ModalState
+  modal: ModalState,
+  chart: Maybe<ChartData>
 }
 
 // Login/Registration input
@@ -87,3 +95,5 @@ type LoginMode = 'register' | 'login';
 type AppError = {
   message: string
 }
+
+type Maybe<T> = T | undefined
