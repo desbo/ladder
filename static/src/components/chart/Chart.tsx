@@ -9,6 +9,22 @@ type Props = {
   data: ChartData
 }
 
+// reduce to 1 rating per player per day
+const summarise = (data: ChartData): ChartData =>
+  Object.keys(data).reduce((cd, name) => {
+    const newData: ChartData = Object.assign(cd, {});
+    const sorted = data[name]
+      .sort((a, b) => new Date(a.x).getTime() - new Date(b.x).getTime())
+      .reverse()
+
+    newData[name] = sorted.reduce((ps: Array<Point>, point: Point): Array<Point> => {
+      const dayAlreadySet = ps.some(p => new Date(p.x).toDateString === new Date(point.x).toDateString)
+      return dayAlreadySet ? ps : ps.concat(point)
+    }, []);
+
+    return newData;
+  }, {} as ChartData);
+
 export default class ChartComponent extends React.Component<Props> {
   canvasElement: null | HTMLCanvasElement
 
@@ -19,6 +35,7 @@ export default class ChartComponent extends React.Component<Props> {
   componentDidMount() {
     const playerNames = Object.keys(this.props.data);
     const colours = palette('rainbow', playerNames.length);
+    const summarised = summarise(this.props.data);
 
     new Chart(this.canvasElement, {
       type: 'line',
@@ -31,7 +48,7 @@ export default class ChartComponent extends React.Component<Props> {
       },
       data: {
         datasets: playerNames.map((name, i) => {
-          const data = this.props.data[name];
+          const data = summarised[name];
 
           return {
             label: name,

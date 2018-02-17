@@ -38,11 +38,14 @@ type Game = {
   player2: PlayerResult
 }
 
+
+type Point = {
+  x: string, 
+  y: number
+}
+
 type ChartData = {
-  [name: string]: [{
-    x: string,
-    y: number
-  }]
+  [name: string]: Array<Point>
 }
 
 /**
