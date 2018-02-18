@@ -19,7 +19,7 @@ const TitleBar = ({ ladder }: { ladder: Ladder }) => {
         </div>
       </div>
 
-      <div className="hero-foot">
+      <div className="hero-foot is-hidden-mobile">
         <div className="container">
           <nav className="tabs is-boxed is-small">
             <ul>
