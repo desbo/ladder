@@ -3,7 +3,7 @@ import * as React from 'react';
 const RatingChange = ({change}: {change:number}) => {
   const up = change > 0;
   return (
-    <span className={`rating-change has-text-right is-size-7 ${up ? 'has-text-success' : 'has-text-danger'}`}>
+    <span className={`rating-change is-size-7 ${up ? 'has-text-success' : 'has-text-danger'}`}>
       <span className="icon">
         <i className={`fas ${up ? 'fa-level-up-alt' : 'fa-level-down-alt'}`}></i>
       </span>
@@ -35,7 +35,12 @@ const Table = ({ ladder }: { ladder: Ladder }) =>
         <td className="is-hidden-mobile">{p.wins}</td>
         <td className="is-hidden-mobile">{p.losses}</td>
         <td>{Math.round(p.winRate * 100)}%</td>
-        <td>{p.rating} {p.lastRatingChange !== 0 && <RatingChange change={p.lastRatingChange} />}</td>
+        <td>
+          <div className="level no-wrap">
+            <span className="rating">{p.rating}</span>
+            {p.lastRatingChange !== 0 && <RatingChange change={p.lastRatingChange} />}
+          </div>
+        </td>
       </tr>)}
     </tbody>
   </table>

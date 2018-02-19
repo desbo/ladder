@@ -11,3 +11,17 @@
   background: #fff;
   border: none;
 }
+
+.no-wrap {
+  white-space: nowrap;
+}
+
+.rating {
+  display: inline-block;
+  width: 2rem;
+  flex: 1;
+}
+
+.rating-change {
+  flex: 2;
+}
