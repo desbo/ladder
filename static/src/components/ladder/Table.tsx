@@ -14,7 +14,7 @@ const RatingChange = ({change}: {change:number}) => {
   
 
 const Table = ({ ladder }: { ladder: Ladder }) => 
-  <table className="table is-striped is-hoverable is-fullwidth">
+  <table className="table is-striped is-hoverable is-fullwidth is-narrow-mobile">
     <thead>
       <tr>
         <th><abbr title="position"></abbr></th>

@@ -50,7 +50,7 @@ class PlayerDropdown extends React.Component<Props, State> {
 
         <div className="dropdown-menu" id="dropdown-menu" role="menu">
           <div className="dropdown-content">
-            {this.props.players.map(p => 
+            {this.props.players.sort((a, b) => a.name.localeCompare(b.name)).map(p => 
               <a onClick={() => this.select(p)} key={p.name} className="dropdown-item">
                 {p.name}
               </a>

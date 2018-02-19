@@ -25,3 +25,11 @@
 .rating-change {
   flex: 2;
 }
+
+
+.table.is-narrow-mobile td,
+.table.is-narrow-mobile th {
+  @media screen and (max-width: 749px) {
+    padding: 0.25em 0.5em; 
+  }
+}
