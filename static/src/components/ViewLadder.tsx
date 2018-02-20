@@ -54,9 +54,7 @@ class ViewLadder extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    if (!this.props.ladder) {
-      this.fetch()
-    }
+    this.fetch()
   }
 
   fetch() {
