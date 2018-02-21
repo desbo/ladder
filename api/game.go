@@ -20,6 +20,7 @@ type PlayerResult struct {
 type Game struct {
 	ID      string       `json:"id"`
 	Date    time.Time    `json:"date"`
+	Season  int          `json:"-"`
 	Player1 PlayerResult `json:"player1"`
 	Player2 PlayerResult `json:"player2"`
 }

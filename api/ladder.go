@@ -21,6 +21,7 @@ type Ladder struct {
 	Players          Players        `json:"players"`
 	InactivityPeriod time.Duration  `json:"-"`
 	Active           bool           `json:"active"`
+	Season           int            `json:"season"`
 }
 
 // LaddersForUser represents the ladders a user either owns or is playing in
@@ -39,7 +40,8 @@ func NewLadder(ctx context.Context, owner *User) (*Ladder, error) {
 		Active:           true,
 		Players:          make(Players, 0),
 		OwnerKey:         owner.DatastoreKey(ctx),
-		InactivityPeriod: 7 * 24 * time.Hour, // TODO: Add to UI
+		InactivityPeriod: 7 * 24 * time.Hour, // TODO: Add to UI,
+		Season:           1,
 	}
 
 	if err := l.AddUser(ctx, owner); err != nil {
