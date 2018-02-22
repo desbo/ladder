@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import { Link } from 'react-router-dom';
+import { firebase } from 'auth';
 
 const ActiveLink = ({ href, children }: { href: string, children?: any }) => {
   const active = window.location.pathname === href
@@ -11,6 +12,8 @@ const ActiveLink = ({ href, children }: { href: string, children?: any }) => {
 }
 
 const TitleBar = ({ ladder }: { ladder: Ladder }) => {
+  const admin = firebase.signedIn() && ladder.ownerID === firebase.currentUser().uid;
+
   return (
     <section className="hero is-light is-small">
       <div className="hero-body">
@@ -25,6 +28,7 @@ const TitleBar = ({ ladder }: { ladder: Ladder }) => {
             <ul>
               <ActiveLink href={`/ladder/${ladder.id}`}>table</ActiveLink>
               <ActiveLink href={`/chart/${ladder.id}`}>chart</ActiveLink>
+              {admin && <ActiveLink href={`/admin/${ladder.id}`}>admin</ActiveLink>}
             </ul>
           </nav>
         </div>

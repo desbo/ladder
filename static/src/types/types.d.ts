@@ -19,7 +19,9 @@ type Ladder = {
   name: string,
   id: string,
   created: string,
-  players: Array<LadderPlayer>
+  players: Array<LadderPlayer>,
+  ownerID: string,
+  season: number
 }
 
 type Player = {

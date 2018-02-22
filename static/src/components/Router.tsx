@@ -8,6 +8,7 @@ import { Actions } from 'actions/actions';
 
 import Main from 'components/Main';
 import Navbar from 'components/nav/Navbar';
+import LadderAdmin from 'components/LadderAdmin';
 import ViewLadder from 'components/ViewLadder';
 import ViewChart from 'components/ViewChart';
 import Modal from 'components/util/Modal';
@@ -48,6 +49,7 @@ const Router = ({ username, modal, signOut, closeModal }: { username: string, mo
           <Route exact path="/" component={Main} />
           <Route path="/ladder/:id" component={ViewLadder} />
           <Route path="/chart/:id" component={ViewChart} />
+          <Route path="/admin/:id" component={LadderAdmin} />
         </Switch>
       </div>
     </BrowserRouter>

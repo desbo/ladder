@@ -62,6 +62,12 @@ class API {
     return API.fetchWithToken(`${this.url}/chart/${id}`)
   }
 
+  startNewSeason(ladderID: string): Promise<any> {
+    return API.fetchWithToken(`${this.url}/ladder/${ladderID}/new-season`, {
+      method: 'POST'
+    })
+  }
+
 }
 
 export default new API(API_URL);
