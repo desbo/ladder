@@ -15,6 +15,12 @@ indexes:
   properties:
   - name: Date
 
+- kind: Game
+  ancestor: yes
+  properties:
+  - name: Season
+  - name: Date
+
 - kind: Ladder
   properties:
   - name: Player.FirebaseID
