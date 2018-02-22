@@ -207,7 +207,7 @@ func chart(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	games, err := l.Games(ctx)
+	games, err := l.GamesForCurrentSeason(ctx)
 
 	if err != nil {
 		log.Errorf(ctx, "error generating chart (could not get games for ladder %s: %s)", p.ByName("id"), err.Error())
@@ -227,6 +227,22 @@ func inactive(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	json.NewEncoder(w).Encode("OK")
 }
 
+func startNewSeason(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	ctx := appengine.NewContext(r)
+	l, err := GetLadder(ctx, p.ByName("id"))
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if _, err := l.StartNewSeason(ctx); err != nil {
+		json.NewEncoder(w).Encode("OK")
+	} else {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+}
+
 func jsonify(f func(w http.ResponseWriter, r *http.Request, p httprouter.Params)) func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		w.Header().Set("Content-Type", "application/json")
@@ -243,6 +259,8 @@ func init() {
 
 	router.GET("/ladder/:id", jsonify(getLadder))
 	router.POST("/ladder", jsonify(createLadder))
+	router.POST("/ladder/:id/new-season", jsonify(startNewSeason))
+
 	router.GET("/ladders", jsonify(getLaddersForPlayer))
 
 	router.POST("/player", jsonify(createUser))

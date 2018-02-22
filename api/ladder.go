@@ -14,14 +14,15 @@ import (
 
 // Ladder represents a single ladder
 type Ladder struct {
-	Name             string         `json:"name"`
-	ID               string         `json:"id"`
-	Created          time.Time      `json:"created"`
-	OwnerKey         *datastore.Key `json:"ownerKey"`
-	Players          Players        `json:"players"`
-	InactivityPeriod time.Duration  `json:"-"`
-	Active           bool           `json:"active"`
-	Season           int            `json:"season"`
+	Name             string        `json:"name"`
+	ID               string        `json:"id"`
+	Created          time.Time     `json:"created"`
+	OwnerID          string        `json:"ownerID"`
+	Players          Players       `json:"players"`
+	InactivityPeriod time.Duration `json:"-"`
+	Active           bool          `json:"active"`
+	Season           int           `json:"season"`
+	SeasonStart      time.Time     `json:"-"`
 }
 
 // LaddersForUser represents the ladders a user either owns or is playing in
@@ -39,9 +40,10 @@ func NewLadder(ctx context.Context, owner *User) (*Ladder, error) {
 		Created:          time.Now(),
 		Active:           true,
 		Players:          make(Players, 0),
-		OwnerKey:         owner.DatastoreKey(ctx),
+		OwnerID:          owner.FirebaseID,
 		InactivityPeriod: 7 * 24 * time.Hour, // TODO: Add to UI,
 		Season:           1,
+		SeasonStart:      time.Now(),
 	}
 
 	if err := l.AddUser(ctx, owner); err != nil {
@@ -68,19 +70,17 @@ func GetLaddersForUser(ctx context.Context, user *User) (*LaddersForUser, error)
 	owned := make([]*Ladder, 0)
 	playing := make([]*Ladder, 0)
 
-	key := user.DatastoreKey(ctx)
-
-	_, err := datastore.NewQuery(LadderKind).Filter("OwnerKey = ", key).GetAll(ctx, &owned)
+	_, err := datastore.NewQuery(LadderKind).Filter("OwnerID = ", user.FirebaseID).GetAll(ctx, &owned)
 
 	if err != nil {
-		log.Errorf(ctx, "error querying owned ladders for %v: %v", key, err)
+		log.Errorf(ctx, "error querying owned ladders for %v: %v", user.FirebaseID, err)
 		return nil, err
 	}
 
 	_, err = datastore.NewQuery(LadderKind).Filter("Players.Name = ", user.Name).GetAll(ctx, &playing)
 
 	if err != nil {
-		log.Errorf(ctx, "error querying playing ladders for %v: %v", key, err)
+		log.Errorf(ctx, "error querying playing ladders for %v: %v", user.FirebaseID, err)
 		return nil, err
 	}
 
@@ -167,6 +167,8 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) (*Game, error) {
 			return err
 		}
 
+		g.Season = l.Season
+
 		if err := g.Save(ctx, l); err != nil {
 			return err
 		}
@@ -213,8 +215,8 @@ func (l *Ladder) Valid(ctx context.Context) bool {
 		return false
 	}
 
-	if l.OwnerKey == nil {
-		log.Errorf(ctx, "ladder %s had no OwnerKey", l)
+	if l.OwnerID == "" {
+		log.Errorf(ctx, "ladder %s had no OwnerID", l)
 		return false
 	}
 

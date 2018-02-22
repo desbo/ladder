@@ -171,7 +171,7 @@ func SubmitGameTest(ctx context.Context, t *testing.T) {
 		t.Fatalf("error logging game: %s", err.Error())
 	}
 
-	games, err := l.Games(ctx)
+	games, err := l.GamesForCurrentSeason(ctx)
 
 	if err != nil {
 		t.Fatalf("error looking up games for ladder: %s", err.Error())

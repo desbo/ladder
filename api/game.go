@@ -63,15 +63,21 @@ func (g *Game) SetRatingChange(u User, change int) error {
 	return nil
 }
 
-func (l *Ladder) Games(ctx context.Context) ([]*Game, error) {
+func (l *Ladder) GamesForSeason(ctx context.Context, season int) ([]*Game, error) {
 	games := make([]*Game, 0)
-	query := datastore.NewQuery(GameKind).Ancestor(l.DatastoreKey(ctx)).Order("Date")
+	query := datastore.NewQuery(GameKind).Ancestor(l.DatastoreKey(ctx)).
+		Filter("Season =", season).
+		Order("Date")
 
 	if _, err := query.GetAll(ctx, &games); err != nil {
 		return nil, err
 	}
 
 	return games, nil
+}
+
+func (l *Ladder) GamesForCurrentSeason(ctx context.Context) ([]*Game, error) {
+	return l.GamesForSeason(ctx, l.Season)
 }
 
 // NewGame creates a new game
