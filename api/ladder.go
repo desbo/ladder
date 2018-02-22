@@ -70,19 +70,17 @@ func GetLaddersForUser(ctx context.Context, user *User) (*LaddersForUser, error)
 	owned := make([]*Ladder, 0)
 	playing := make([]*Ladder, 0)
 
-	key := user.DatastoreKey(ctx)
-
-	_, err := datastore.NewQuery(LadderKind).Filter("OwnerKey = ", key).GetAll(ctx, &owned)
+	_, err := datastore.NewQuery(LadderKind).Filter("OwnerID = ", user.FirebaseID).GetAll(ctx, &owned)
 
 	if err != nil {
-		log.Errorf(ctx, "error querying owned ladders for %v: %v", key, err)
+		log.Errorf(ctx, "error querying owned ladders for %v: %v", user.FirebaseID, err)
 		return nil, err
 	}
 
 	_, err = datastore.NewQuery(LadderKind).Filter("Players.Name = ", user.Name).GetAll(ctx, &playing)
 
 	if err != nil {
-		log.Errorf(ctx, "error querying playing ladders for %v: %v", key, err)
+		log.Errorf(ctx, "error querying playing ladders for %v: %v", user.FirebaseID, err)
 		return nil, err
 	}
 
