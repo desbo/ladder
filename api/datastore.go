@@ -12,10 +12,11 @@ import (
 
 // Entity kinds
 const (
-	LadderKind = "Ladder"
-	PlayerKind = "Player"
-	GameKind   = "Game"
-	UserKind   = "User"
+	LadderKind         = "Ladder"
+	LadderSnapshotKind = "LadderSnapshot" // used to store end-of-season results
+	PlayerKind         = "Player"
+	GameKind           = "Game"
+	UserKind           = "User"
 )
 
 // DatastoreEntity is any entity that can exist in GAE datastore

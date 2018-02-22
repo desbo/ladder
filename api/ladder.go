@@ -22,6 +22,7 @@ type Ladder struct {
 	InactivityPeriod time.Duration  `json:"-"`
 	Active           bool           `json:"active"`
 	Season           int            `json:"season"`
+	SeasonStart      time.Time      `json:"-"`
 }
 
 // LaddersForUser represents the ladders a user either owns or is playing in
@@ -42,6 +43,7 @@ func NewLadder(ctx context.Context, owner *User) (*Ladder, error) {
 		OwnerKey:         owner.DatastoreKey(ctx),
 		InactivityPeriod: 7 * 24 * time.Hour, // TODO: Add to UI,
 		Season:           1,
+		SeasonStart:      time.Now(),
 	}
 
 	if err := l.AddUser(ctx, owner); err != nil {
@@ -166,6 +168,8 @@ func (l *Ladder) LogGame(ctx context.Context, g *Game) (*Game, error) {
 		if err := g.SetRatingChange(loserUser, la); err != nil {
 			return err
 		}
+
+		g.Season = l.Season
 
 		if err := g.Save(ctx, l); err != nil {
 			return err

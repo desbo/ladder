@@ -207,7 +207,7 @@ func chart(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		return
 	}
 
-	games, err := l.Games(ctx)
+	games, err := l.GamesForCurrentSeason(ctx)
 
 	if err != nil {
 		log.Errorf(ctx, "error generating chart (could not get games for ladder %s: %s)", p.ByName("id"), err.Error())
