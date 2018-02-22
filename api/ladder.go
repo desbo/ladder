@@ -14,15 +14,15 @@ import (
 
 // Ladder represents a single ladder
 type Ladder struct {
-	Name             string         `json:"name"`
-	ID               string         `json:"id"`
-	Created          time.Time      `json:"created"`
-	OwnerKey         *datastore.Key `json:"ownerKey"`
-	Players          Players        `json:"players"`
-	InactivityPeriod time.Duration  `json:"-"`
-	Active           bool           `json:"active"`
-	Season           int            `json:"season"`
-	SeasonStart      time.Time      `json:"-"`
+	Name             string        `json:"name"`
+	ID               string        `json:"id"`
+	Created          time.Time     `json:"created"`
+	OwnerID          string        `json:"ownerID"`
+	Players          Players       `json:"players"`
+	InactivityPeriod time.Duration `json:"-"`
+	Active           bool          `json:"active"`
+	Season           int           `json:"season"`
+	SeasonStart      time.Time     `json:"-"`
 }
 
 // LaddersForUser represents the ladders a user either owns or is playing in
@@ -40,7 +40,7 @@ func NewLadder(ctx context.Context, owner *User) (*Ladder, error) {
 		Created:          time.Now(),
 		Active:           true,
 		Players:          make(Players, 0),
-		OwnerKey:         owner.DatastoreKey(ctx),
+		OwnerID:          owner.FirebaseID,
 		InactivityPeriod: 7 * 24 * time.Hour, // TODO: Add to UI,
 		Season:           1,
 		SeasonStart:      time.Now(),
@@ -217,8 +217,8 @@ func (l *Ladder) Valid(ctx context.Context) bool {
 		return false
 	}
 
-	if l.OwnerKey == nil {
-		log.Errorf(ctx, "ladder %s had no OwnerKey", l)
+	if l.OwnerID == "" {
+		log.Errorf(ctx, "ladder %s had no OwnerID", l)
 		return false
 	}
 
