@@ -236,7 +236,7 @@ func startNewSeason(w http.ResponseWriter, r *http.Request, p httprouter.Params)
 		return
 	}
 
-	if _, err := l.StartNewSeason(ctx); err != nil {
+	if _, err := l.StartNewSeason(ctx); err == nil {
 		json.NewEncoder(w).Encode("OK")
 	} else {
 		http.Error(w, err.Error(), http.StatusBadRequest)
