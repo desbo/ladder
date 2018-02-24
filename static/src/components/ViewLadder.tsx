@@ -89,7 +89,8 @@ class ViewLadder extends React.Component<Props, State> {
                           </div>
                           <div className="column is-6">
                             <PlayerDropdown 
-                              players={this.props.ladder.players.filter(p => p.name !== this.props.user.username )}
+                              players={this.props.ladder.players.filter(p => p.name !== this.props.user.username)}
+                              selected={this.props.opponent}
                               onSelect={this.props.selectOpponent} />
                           </div>
                         </div>
