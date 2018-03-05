@@ -14,11 +14,6 @@ import (
 	_ "google.golang.org/appengine/remote_api"
 )
 
-type playerPostData struct {
-	Name        string `json:"name"`
-	RawPassword string `json:"password"`
-}
-
 func getLadder(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	lad, err := GetLadder(appengine.NewContext(r), p.ByName("id"))
 
